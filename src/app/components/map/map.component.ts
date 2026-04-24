@@ -16,7 +16,6 @@ import { TravelLocation } from '../../models/location.model';
 })
 export class MapComponent implements OnInit, OnDestroy {
   @Output() locationSelected = new EventEmitter<TravelLocation>();
-  @Output() mapClicked = new EventEmitter<{ lat: number; lng: number }>();
 
   private map!: maplibregl.Map;
   private markers = new Map<string, maplibregl.Marker>();
@@ -42,6 +41,13 @@ export class MapComponent implements OnInit, OnDestroy {
       this.map.addControl(new maplibregl.NavigationControl(), 'top-right');
       this.map.addControl(new maplibregl.ScaleControl(), 'bottom-left');
       this.map.addControl(new maplibregl.FullscreenControl(), 'top-right');
+      this.map.addControl(
+        new maplibregl.GeolocateControl({
+          positionOptions: { enableHighAccuracy: true },
+          trackUserLocation: true,
+        }),
+        'top-right',
+      );
 
       this.map.on('load', () => {
         // 3-D terrain
@@ -62,13 +68,6 @@ export class MapComponent implements OnInit, OnDestroy {
         this.sub = this.locationService.locations$.subscribe(locations => {
           this.zone.run(() => this.syncMarkers(locations));
         });
-      });
-
-      // Right-click or Ctrl+click to add new location
-      this.map.on('contextmenu', (e) => {
-        this.zone.run(() =>
-          this.mapClicked.emit({ lat: e.lngLat.lat, lng: e.lngLat.lng })
-        );
       });
     });
   }

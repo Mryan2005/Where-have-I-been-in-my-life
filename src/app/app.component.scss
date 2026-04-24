@@ -4,61 +4,295 @@
   height: 100vh;
 }
 
+// ── CSS custom properties (dark mode default) ──────────────────────────────────
 .app-shell {
+  --tb-bg: rgba(22, 22, 24, 0.88);
+  --tb-border: rgba(255, 255, 255, 0.1);
+  --tb-text: #e8e8e8;
+  --tb-text-muted: rgba(255, 255, 255, 0.5);
+  --tb-active: rgba(255, 255, 255, 0.12);
+  --dropdown-bg: rgba(30, 30, 32, 0.97);
+  --dropdown-border: rgba(255, 255, 255, 0.1);
+  --dropdown-hover: rgba(255, 255, 255, 0.07);
+  --input-bg: rgba(255, 255, 255, 0.07);
+  --input-border: rgba(255, 255, 255, 0.14);
+  --input-text: #e8e8e8;
+  --dock-bg: rgba(20, 20, 22, 0.94);
+  --dock-item-bg: rgba(255, 255, 255, 0.07);
+  --dock-item-hover: rgba(255, 255, 255, 0.13);
+  --accent: #5E9CF5;
+
   display: flex;
   flex-direction: column;
   width: 100%;
   height: 100%;
   background: #0d0d0f;
+  transition: background 0.3s;
+
+  // ── Light mode overrides ─────────────────────────────────────────────────
+  &.light-mode {
+    --tb-bg: rgba(242, 242, 247, 0.92);
+    --tb-border: rgba(0, 0, 0, 0.1);
+    --tb-text: #1c1c1e;
+    --tb-text-muted: rgba(0, 0, 0, 0.45);
+    --tb-active: rgba(0, 0, 0, 0.08);
+    --dropdown-bg: rgba(255, 255, 255, 0.98);
+    --dropdown-border: rgba(0, 0, 0, 0.1);
+    --dropdown-hover: rgba(0, 0, 0, 0.05);
+    --input-bg: rgba(0, 0, 0, 0.05);
+    --input-border: rgba(0, 0, 0, 0.12);
+    --input-text: #1c1c1e;
+    --dock-bg: rgba(242, 242, 247, 0.96);
+    --dock-item-bg: rgba(0, 0, 0, 0.05);
+    --dock-item-hover: rgba(0, 0, 0, 0.1);
+    background: #d8d8e0;
+  }
 }
 
-// ── Top nav bar ────────────────────────────────────────────────────────────────
+// ── macOS Top Bar ──────────────────────────────────────────────────────────────
 .topbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  height: 44px;
-  padding: 0 16px;
-  background: rgba(18, 18, 20, 0.92);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  z-index: 500;
+  height: 28px;
+  padding: 0 8px 0 12px;
+  background: var(--tb-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--tb-border);
+  z-index: 600;
   flex-shrink: 0;
+  gap: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
 }
 
 .topbar-brand {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  margin-right: 12px;
 
-  .brand-icon { font-size: 20px; }
+  .brand-icon { font-size: 16px; }
   .brand-name {
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 700;
-    color: #f0f0f0;
-    letter-spacing: 0.3px;
-    font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+    color: var(--tb-text);
+    letter-spacing: 0.2px;
+    white-space: nowrap;
   }
 }
 
-.btn-add-nav {
+// ── Menu items ─────────────────────────────────────────────────────────────────
+.topbar-menu {
+  display: flex;
+  align-items: stretch;
+  height: 100%;
+  flex: 1;
+}
+
+.menu-item {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 5px;
-  background: #5E9CF5;
-  color: #fff;
+
+  &.active > .menu-btn {
+    background: var(--tb-active);
+  }
+}
+
+.menu-btn {
+  height: 100%;
+  padding: 0 10px;
+  background: transparent;
   border: none;
-  border-radius: 8px;
-  padding: 6px 14px;
+  color: var(--tb-text);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 4px;
+  white-space: nowrap;
+  transition: background 0.12s;
+
+  &:hover { background: var(--tb-active); }
+}
+
+// ── Dropdown panels ────────────────────────────────────────────────────────────
+.dropdown-panel {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  background: var(--dropdown-bg);
+  backdrop-filter: blur(24px) saturate(200%);
+  border: 1px solid var(--dropdown-border);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 700;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+  animation: dropdown-in 0.15s ease;
+
+  @keyframes dropdown-in {
+    from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+}
+
+.list-panel {
+  width: 300px;
+}
+
+.settings-panel {
+  width: 240px;
+  padding: 8px 0;
+}
+
+// ── List panel internals ───────────────────────────────────────────────────────
+.dropdown-header {
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid var(--dropdown-border);
+}
+
+.search-input {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 7px;
+  padding: 5px 10px;
+  font-size: 13px;
+  color: var(--input-text);
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.15s;
+
+  &::placeholder { color: var(--tb-text-muted); }
+  &:focus { border-color: var(--accent); }
+}
+
+.location-list {
+  list-style: none;
+  margin: 0;
+  padding: 6px 0;
+  max-height: 320px;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: var(--input-border); border-radius: 2px; }
+}
+
+.location-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: background 0.1s;
+
+  &:hover { background: var(--dropdown-hover); }
+}
+
+.loc-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.loc-name {
+  flex: 1;
+  font-size: 13px;
+  color: var(--tb-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.loc-date {
+  font-size: 11px;
+  color: var(--tb-text-muted);
+  white-space: nowrap;
+}
+
+.no-results {
+  padding: 14px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--tb-text-muted);
+}
+
+// ── Settings panel internals ───────────────────────────────────────────────────
+.settings-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 14px;
+}
+
+.settings-label {
+  font-size: 13px;
+  color: var(--tb-text);
+}
+
+.settings-divider {
+  height: 1px;
+  background: var(--dropdown-border);
+  margin: 4px 0;
+}
+
+.settings-btn {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--tb-text);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: inherit;
   cursor: pointer;
   transition: background 0.15s;
-  font-family: inherit;
 
-  span { font-size: 16px; line-height: 1; }
-  &:hover { background: #4a87e0; }
-  &:active { background: #3a70cc; }
+  &:hover { background: var(--dropdown-hover); }
+}
+
+// ── Right-side controls ────────────────────────────────────────────────────────
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.dock-toggle-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  color: var(--tb-text-muted);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+
+  &:hover { background: var(--tb-active); color: var(--tb-text); }
+  &.has-minimized { color: var(--accent); }
+}
+
+.dock-badge {
+  background: var(--accent);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 10px;
+  line-height: 1.4;
+}
+
+// ── Panel backdrop ─────────────────────────────────────────────────────────────
+.panel-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 650;
 }
 
 // ── Map area ───────────────────────────────────────────────────────────────────
@@ -66,4 +300,100 @@
   flex: 1;
   position: relative;
   overflow: hidden;
+}
+
+// ── Minimized windows dock ────────────────────────────────────────────────────
+.minimized-dock {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 800;
+  pointer-events: all;
+}
+
+.dock-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--dock-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--dropdown-border);
+  border-bottom: none;
+  border-radius: 12px 12px 0 0;
+  padding: 6px 14px;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.25);
+  animation: dock-in 0.2s ease;
+
+  @keyframes dock-in {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+}
+
+.dock-label {
+  font-size: 11px;
+  color: var(--tb-text-muted);
+  white-space: nowrap;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.dock-items {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.dock-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--dock-item-bg);
+  border-radius: 8px;
+  padding: 3px 8px 3px 6px;
+  cursor: pointer;
+  transition: background 0.12s;
+  font-size: 12px;
+  color: var(--tb-text);
+  max-width: 160px;
+
+  &:hover { background: var(--dock-item-hover); }
+}
+
+.dock-item-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dock-item-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+.dock-item-close {
+  background: none;
+  border: none;
+  color: var(--tb-text-muted);
+  font-size: 10px;
+  cursor: pointer;
+  padding: 0 2px;
+  border-radius: 3px;
+  line-height: 1;
+  transition: color 0.1s;
+  flex-shrink: 0;
+
+  &:hover { color: #FF5F57; }
+}
+
+.dock-empty {
+  font-size: 12px;
+  color: var(--tb-text-muted);
+  padding: 0 4px;
 }
