@@ -1,1 +1,69 @@
-<p>add-location-dialog works!</p>
+<div class="dialog-backdrop" (click)="cancel()">
+  <div class="dialog" (click)="$event.stopPropagation()">
+
+    <!-- macOS-style title bar -->
+    <div class="dialog-titlebar">
+      <div class="traffic-lights">
+        <span class="tl tl-close"    (click)="cancel()"></span>
+        <span class="tl tl-minimize"></span>
+        <span class="tl tl-maximize"></span>
+      </div>
+      <span class="dialog-title">{{ isEditMode ? '编辑地点' : '添加新地点' }}</span>
+    </div>
+
+    <div class="dialog-body">
+      <div class="form-row">
+        <label>📍 地点名称</label>
+        <input type="text" [(ngModel)]="name" placeholder="例：故宫博物院" />
+      </div>
+
+      <div class="form-row two-col">
+        <div>
+          <label>🌐 纬度</label>
+          <input type="number" [(ngModel)]="latitude" step="0.0001" />
+        </div>
+        <div>
+          <label>🌐 经度</label>
+          <input type="number" [(ngModel)]="longitude" step="0.0001" />
+        </div>
+      </div>
+
+      <div class="form-row two-col">
+        <div>
+          <label>📅 到访日期</label>
+          <input type="date" [(ngModel)]="visitDate" />
+        </div>
+        <div>
+          <label>🎨 标记颜色</label>
+          <div class="color-row">
+            <input type="color" [(ngModel)]="markerColor" class="color-input" />
+            <span class="color-hex">{{ markerColor }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label>✍️ 游记内容 <small>(支持 Markdown)</small></label>
+        <textarea [(ngModel)]="content" rows="10" placeholder="# 标题&#10;&#10;在这里写下你的旅行故事..."></textarea>
+      </div>
+
+      <div class="form-row">
+        <label>🖼️ 图片上传</label>
+        <input type="file" accept="image/*" multiple (change)="onImageUpload($event)" />
+        <div class="image-preview" *ngIf="images.length">
+          <div class="preview-item" *ngFor="let img of images; let i = index">
+            <img [src]="img" />
+            <button class="remove-img" (click)="removeImage(i)" title="删除">✕</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dialog-footer">
+      <button class="btn-cancel" (click)="cancel()">取消</button>
+      <button class="btn-save"   (click)="submit()" [disabled]="!name.trim()">
+        {{ isEditMode ? '保存修改' : '添加地点' }}
+      </button>
+    </div>
+  </div>
+</div>
