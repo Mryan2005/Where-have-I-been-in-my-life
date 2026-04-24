@@ -6,6 +6,7 @@ import { TravelLocation } from './models/location.model';
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
+  standalone: false,
 })
 export class AppComponent {
   selectedLocation: TravelLocation | null = null;
