@@ -13,6 +13,9 @@
       <div class="menu-item" [class.active]="showListPanel">
         <button class="menu-btn" (click)="toggleListPanel()">{{ t('list') }}</button>
       </div>
+      <div class="menu-item" [class.active]="showCalendarPanel">
+        <button class="menu-btn" (click)="toggleCalendarPanel()">{{ t('calendar') }}</button>
+      </div>
       <div class="menu-item" [class.active]="showSettingsPanel">
         <button class="menu-btn" (click)="toggleSettingsPanel()">{{ t('settings') }}</button>
       </div>
@@ -33,7 +36,7 @@
   </nav>
 
   <!-- Backdrop to close panel windows -->
-  <div class="panel-backdrop" *ngIf="showListPanel || showSettingsPanel" (click)="closeAllPanels()"></div>
+  <div class="panel-backdrop" *ngIf="showListPanel || showSettingsPanel || showCalendarPanel" (click)="closeAllPanels()"></div>
 
   <!-- ── Full-screen 3D Map ──────────────────────────────────────────── -->
   <div class="map-wrapper">
@@ -119,6 +122,64 @@
           {{ isDarkMode ? t('light') : t('dark') }}
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- ── Calendar macOS Window ─────────────────────────────────────── -->
+  <div
+    class="app-macos-window calendar-window"
+    *ngIf="showCalendarPanel"
+    [style.left.px]="calendarWindowX"
+    [style.top.px]="calendarWindowY"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="app-win-titlebar" (mousedown)="onCalendarTitleBarMouseDown($event)">
+      <div class="app-traffic-lights">
+        <button class="app-tl app-tl-close" (click)="showCalendarPanel = false; $event.stopPropagation()">
+          <span class="app-tl-icon">✕</span>
+        </button>
+        <button class="app-tl app-tl-min" disabled><span class="app-tl-icon">−</span></button>
+        <button class="app-tl app-tl-max" disabled><span class="app-tl-icon">⤢</span></button>
+      </div>
+      <span class="app-win-title">{{ t('calendarTitle') }}</span>
+    </div>
+    <div class="app-win-body cal-body">
+
+      <!-- Month navigation -->
+      <div class="cal-header">
+        <button class="cal-nav-btn" (click)="prevCalendarMonth()">‹</button>
+        <div class="cal-header-center">
+          <span class="cal-month-label">{{ calendarMonthLabel }}</span>
+          <button class="cal-today-btn" (click)="goToToday()">{{ currentLang === 'zh' ? '今天' : 'Today' }}</button>
+        </div>
+        <button class="cal-nav-btn" (click)="nextCalendarMonth()">›</button>
+      </div>
+
+      <!-- Day-of-week header row -->
+      <div class="cal-grid">
+        <div class="cal-day-name" *ngFor="let name of calendarDayNames">{{ name }}</div>
+
+        <!-- Calendar day cells -->
+        <div
+          *ngFor="let day of calendarDays"
+          class="cal-day"
+          [class.other-month]="!day.isCurrentMonth"
+          [class.today]="day.isToday"
+          [class.has-visit]="day.locations.length > 0"
+          (click)="onCalendarDayClicked(day)"
+          [title]="day.locations.length > 0 ? day.locations[0].name + (day.locations.length > 1 ? (' +' + (day.locations.length - 1)) : '') : ''"
+        >
+          <span class="cal-day-num">{{ day.dayNum }}</span>
+          <div class="cal-dots" *ngIf="day.locations.length > 0">
+            <span
+              *ngFor="let loc of day.locations.slice(0, 3)"
+              class="cal-dot"
+              [style.background]="loc.markerColor || '#E74C3C'"
+            ></span>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
