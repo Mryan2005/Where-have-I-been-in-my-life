@@ -9,10 +9,25 @@ import { MapComponent } from './components/map/map.component';
 
 type Lang = 'zh' | 'en';
 
+interface CalendarDay {
+  date: Date;
+  dayNum: number;
+  isCurrentMonth: boolean;
+  isToday: boolean;
+  locations: TravelLocation[];
+}
+
+const MONTH_NAMES_ZH = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+const MONTH_NAMES_EN = ['January','February','March','April','May','June',
+                        'July','August','September','October','November','December'];
+const DAY_NAMES_ZH = ['日','一','二','三','四','五','六'];
+const DAY_NAMES_EN = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+
 const TRANSLATIONS: Record<Lang, Record<string, string>> = {
   zh: {
     appName: '我去过的地方',
     list: '列表',
+    calendar: '日历',
     settings: '设置',
     search: '搜索地点…',
     language: '语言',
@@ -25,10 +40,12 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     restore: '恢复',
     locations: '地点列表',
     settingsTitle: '偏好设置',
+    calendarTitle: '旅行日历',
   },
   en: {
     appName: 'Where I\'ve Been',
     list: 'List',
+    calendar: 'Calendar',
     settings: 'Settings',
     search: 'Search locations…',
     language: 'Language',
@@ -41,6 +58,7 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     restore: 'Restore',
     locations: 'Locations',
     settingsTitle: 'Preferences',
+    calendarTitle: 'Travel Calendar',
   },
 };
 
@@ -60,20 +78,32 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   // ── Panel window visibility ────────────────────────────────────────────────
   showListPanel = false;
   showSettingsPanel = false;
+  showCalendarPanel = false;
 
-  // ── List window drag state ─────────────────────────────────────────────────
+  // ── List window drag ───────────────────────────────────────────────────────
   listWindowX = 80;
   listWindowY = 60;
   private listWinDragging = false;
   private listWinOffsetX = 0;
   private listWinOffsetY = 0;
 
-  // ── Settings window drag state ─────────────────────────────────────────────
+  // ── Settings window drag ───────────────────────────────────────────────────
   settingsWindowX = 260;
   settingsWindowY = 60;
   private settingsWinDragging = false;
   private settingsWinOffsetX = 0;
   private settingsWinOffsetY = 0;
+
+  // ── Calendar window drag ───────────────────────────────────────────────────
+  calendarWindowX = 440;
+  calendarWindowY = 60;
+  private calWinDragging = false;
+  private calWinOffsetX = 0;
+  private calWinOffsetY = 0;
+
+  // ── Calendar month/year ────────────────────────────────────────────────────
+  calendarYear: number;
+  calendarMonth: number; // 0-based
 
   // ── List search ────────────────────────────────────────────────────────────
   searchQuery = '';
@@ -85,7 +115,11 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private sub!: Subscription;
 
-  constructor(private locationService: LocationService) {}
+  constructor(private locationService: LocationService) {
+    const now = new Date();
+    this.calendarYear = now.getFullYear();
+    this.calendarMonth = now.getMonth();
+  }
 
   ngOnInit(): void {
     this.sub = this.locationService.locations$.subscribe(locs => {
@@ -94,15 +128,111 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.applyTheme();
   }
 
-  ngAfterViewInit(): void { /* mapComp is now available */ }
+  ngAfterViewInit(): void { /* mapComp available */ }
 
-  ngOnDestroy(): void {
-    this.sub?.unsubscribe();
-  }
+  ngOnDestroy(): void { this.sub?.unsubscribe(); }
 
   // ── Translation helper ─────────────────────────────────────────────────────
   t(key: string): string {
     return TRANSLATIONS[this.currentLang][key] ?? key;
+  }
+
+  // ── Calendar computed properties ───────────────────────────────────────────
+  get calendarDayNames(): string[] {
+    return this.currentLang === 'zh' ? DAY_NAMES_ZH : DAY_NAMES_EN;
+  }
+
+  get calendarMonthLabel(): string {
+    const names = this.currentLang === 'zh' ? MONTH_NAMES_ZH : MONTH_NAMES_EN;
+    if (this.currentLang === 'zh') {
+      return `${this.calendarYear}年${names[this.calendarMonth]}`;
+    }
+    return `${names[this.calendarMonth]} ${this.calendarYear}`;
+  }
+
+  get calendarDays(): CalendarDay[] {
+    const year = this.calendarYear;
+    const month = this.calendarMonth;
+    const today = new Date();
+    const todayStr = this.toDateStr(today);
+
+    const firstOfMonth = new Date(year, month, 1);
+    const lastOfMonth = new Date(year, month + 1, 0);
+    const startDow = firstOfMonth.getDay(); // 0=Sun
+
+    const days: CalendarDay[] = [];
+
+    // Fill leading days from previous month
+    for (let i = 0; i < startDow; i++) {
+      const d = new Date(year, month, i - startDow + 1);
+      days.push({ date: d, dayNum: d.getDate(), isCurrentMonth: false, isToday: false, locations: [] });
+    }
+
+    // Fill current month
+    for (let d = 1; d <= lastOfMonth.getDate(); d++) {
+      const date = new Date(year, month, d);
+      const dateStr = this.toDateStr(date);
+      const locations = this.allLocations.filter(l => l.visitDate === dateStr);
+      days.push({
+        date,
+        dayNum: d,
+        isCurrentMonth: true,
+        isToday: dateStr === todayStr,
+        locations,
+      });
+    }
+
+    // Fill trailing days from next month (up to 42 cells = 6 rows × 7 cols)
+    let trailing = 42 - days.length;
+    // Minimum: always complete the last row (at least 0 trailing days)
+    if (trailing < 0) trailing = 0;
+    for (let i = 1; i <= trailing; i++) {
+      const d = new Date(year, month + 1, i);
+      days.push({ date: d, dayNum: d.getDate(), isCurrentMonth: false, isToday: false, locations: [] });
+    }
+
+    return days;
+  }
+
+  private toDateStr(date: Date): string {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  // ── Calendar navigation ────────────────────────────────────────────────────
+  prevCalendarMonth(): void {
+    if (this.calendarMonth === 0) {
+      this.calendarMonth = 11;
+      this.calendarYear--;
+    } else {
+      this.calendarMonth--;
+    }
+  }
+
+  nextCalendarMonth(): void {
+    if (this.calendarMonth === 11) {
+      this.calendarMonth = 0;
+      this.calendarYear++;
+    } else {
+      this.calendarMonth++;
+    }
+  }
+
+  goToToday(): void {
+    const now = new Date();
+    this.calendarYear = now.getFullYear();
+    this.calendarMonth = now.getMonth();
+  }
+
+  onCalendarDayClicked(day: CalendarDay): void {
+    if (!day.locations.length) return;
+    // Open detail windows for all locations that day
+    day.locations.forEach(loc => this.onLocationSelected(loc));
+    // Fly map to the first location
+    const first = day.locations[0];
+    this.mapComp?.flyTo(first.longitude, first.latitude);
   }
 
   // ── Filtered locations for list panel ─────────────────────────────────────
@@ -128,9 +258,9 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!existing) {
       this.openWindows = [...this.openWindows, loc];
     }
-    // If minimized, restore it
     this.minimizedWindowIds.delete(loc.id);
     this.showListPanel = false;
+    this.showCalendarPanel = false;
   }
 
   onWindowClosed(loc: TravelLocation): void {
@@ -148,29 +278,34 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.minimizedWindowIds = new Set(this.minimizedWindowIds);
   }
 
-  /** Open location detail window and fly the map to it. */
   openLocationFromList(loc: TravelLocation): void {
     this.onLocationSelected(loc);
     this.mapComp?.flyTo(loc.longitude, loc.latitude);
   }
 
-  // ── Topbar panel window toggles ────────────────────────────────────────────
+  // ── Topbar panel toggles ───────────────────────────────────────────────────
   toggleListPanel(): void {
     this.showListPanel = !this.showListPanel;
-    if (this.showListPanel) this.showSettingsPanel = false;
+    if (this.showListPanel) { this.showSettingsPanel = false; this.showCalendarPanel = false; }
+  }
+
+  toggleCalendarPanel(): void {
+    this.showCalendarPanel = !this.showCalendarPanel;
+    if (this.showCalendarPanel) { this.showListPanel = false; this.showSettingsPanel = false; }
   }
 
   toggleSettingsPanel(): void {
     this.showSettingsPanel = !this.showSettingsPanel;
-    if (this.showSettingsPanel) this.showListPanel = false;
+    if (this.showSettingsPanel) { this.showListPanel = false; this.showCalendarPanel = false; }
   }
 
   closeAllPanels(): void {
     this.showListPanel = false;
     this.showSettingsPanel = false;
+    this.showCalendarPanel = false;
   }
 
-  // ── List window drag ───────────────────────────────────────────────────────
+  // ── Window drag handlers ───────────────────────────────────────────────────
   onListTitleBarMouseDown(e: MouseEvent): void {
     this.listWinDragging = true;
     this.listWinOffsetX = e.clientX - this.listWindowX;
@@ -178,11 +313,17 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     e.preventDefault();
   }
 
-  // ── Settings window drag ───────────────────────────────────────────────────
   onSettingsTitleBarMouseDown(e: MouseEvent): void {
     this.settingsWinDragging = true;
     this.settingsWinOffsetX = e.clientX - this.settingsWindowX;
     this.settingsWinOffsetY = e.clientY - this.settingsWindowY;
+    e.preventDefault();
+  }
+
+  onCalendarTitleBarMouseDown(e: MouseEvent): void {
+    this.calWinDragging = true;
+    this.calWinOffsetX = e.clientX - this.calendarWindowX;
+    this.calWinOffsetY = e.clientY - this.calendarWindowY;
     e.preventDefault();
   }
 
@@ -196,12 +337,17 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       this.settingsWindowX = e.clientX - this.settingsWinOffsetX;
       this.settingsWindowY = e.clientY - this.settingsWinOffsetY;
     }
+    if (this.calWinDragging) {
+      this.calendarWindowX = e.clientX - this.calWinOffsetX;
+      this.calendarWindowY = e.clientY - this.calWinOffsetY;
+    }
   }
 
   @HostListener('document:mouseup')
   onDocMouseUp(): void {
     this.listWinDragging = false;
     this.settingsWinDragging = false;
+    this.calWinDragging = false;
   }
 
   // ── i18n & theme ──────────────────────────────────────────────────────────
