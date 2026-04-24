@@ -1,0 +1,69 @@
+:host {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: #0d0d0f;
+}
+
+// ── Top nav bar ────────────────────────────────────────────────────────────────
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 44px;
+  padding: 0 16px;
+  background: rgba(18, 18, 20, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 500;
+  flex-shrink: 0;
+}
+
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .brand-icon { font-size: 20px; }
+  .brand-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #f0f0f0;
+    letter-spacing: 0.3px;
+    font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+  }
+}
+
+.btn-add-nav {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #5E9CF5;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+
+  span { font-size: 16px; line-height: 1; }
+  &:hover { background: #4a87e0; }
+  &:active { background: #3a70cc; }
+}
+
+// ── Map area ───────────────────────────────────────────────────────────────────
+.map-wrapper {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}

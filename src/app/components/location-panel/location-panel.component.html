@@ -1,1 +1,48 @@
-<p>location-panel works!</p>
+<div
+  class="macos-window"
+  [class.minimized]="isMinimized"
+  [class.maximized]="isMaximized"
+  [style.left.px]="windowX"
+  [style.top.px]="windowY"
+  [style.width.px]="windowWidth"
+  [style.height.px]="isMinimized ? 36 : windowHeight"
+>
+  <!-- Title Bar -->
+  <div class="title-bar" (mousedown)="onTitleBarMouseDown($event)">
+    <div class="traffic-lights">
+      <button class="tl tl-close"    title="关闭"   (click)="close(); $event.stopPropagation()">
+        <span class="tl-icon">✕</span>
+      </button>
+      <button class="tl tl-minimize" title="最小化" (click)="toggleMinimize(); $event.stopPropagation()">
+        <span class="tl-icon">−</span>
+      </button>
+      <button class="tl tl-maximize" title="全屏"   (click)="toggleMaximize(); $event.stopPropagation()">
+        <span class="tl-icon">⤢</span>
+      </button>
+    </div>
+    <span class="window-title">{{ location.name }}</span>
+    <span class="window-date">{{ location.visitDate }}</span>
+  </div>
+
+  <!-- Content (hidden when minimized) -->
+  <div class="window-body" *ngIf="!isMinimized">
+
+    <!-- Image gallery -->
+    <div class="image-gallery" *ngIf="location?.images?.length">
+      <img
+        *ngFor="let img of location.images"
+        [src]="img"
+        alt="travel photo"
+        class="gallery-img"
+      />
+    </div>
+
+    <!-- Markdown content -->
+    <div class="markdown-body" [innerHTML]="renderedContent"></div>
+
+    <!-- Footer actions -->
+    <div class="window-footer">
+      <button class="btn-edit" (click)="requestEdit()">✏️ 编辑</button>
+    </div>
+  </div>
+</div>
