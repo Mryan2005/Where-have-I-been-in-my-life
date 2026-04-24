@@ -19,6 +19,7 @@ export class MapComponent implements OnInit, OnDestroy {
 
   private map!: maplibregl.Map;
   private markers = new Map<string, maplibregl.Marker>();
+  private userMarker: maplibregl.Marker | null = null;
   private sub!: Subscription;
 
   constructor(
@@ -41,13 +42,17 @@ export class MapComponent implements OnInit, OnDestroy {
       this.map.addControl(new maplibregl.NavigationControl(), 'top-right');
       this.map.addControl(new maplibregl.ScaleControl(), 'bottom-left');
       this.map.addControl(new maplibregl.FullscreenControl(), 'top-right');
-      this.map.addControl(
-        new maplibregl.GeolocateControl({
-          positionOptions: { enableHighAccuracy: true },
-          trackUserLocation: true,
-        }),
-        'top-right',
-      );
+
+      const geoControl = new maplibregl.GeolocateControl({
+        positionOptions: { enableHighAccuracy: true },
+        trackUserLocation: true,
+      });
+
+      geoControl.on('geolocate', (pos: GeolocationPosition) => {
+        this.placeUserMarker(pos.coords.longitude, pos.coords.latitude);
+      });
+
+      this.map.addControl(geoControl, 'top-right');
 
       this.map.on('load', () => {
         // 3-D terrain
@@ -75,6 +80,28 @@ export class MapComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.sub?.unsubscribe();
     this.map?.remove();
+  }
+
+  /** Fly the map camera to the given coordinates. */
+  flyTo(lng: number, lat: number, zoom = 12): void {
+    if (!this.map) return;
+    this.zone.runOutsideAngular(() => {
+      this.map.flyTo({ center: [lng, lat], zoom, duration: 1400, essential: true });
+    });
+  }
+
+  private placeUserMarker(lng: number, lat: number): void {
+    this.zone.runOutsideAngular(() => {
+      if (this.userMarker) {
+        this.userMarker.setLngLat([lng, lat]);
+      } else {
+        const el = document.createElement('div');
+        el.className = 'user-location-marker';
+        this.userMarker = new maplibregl.Marker({ element: el, anchor: 'center' })
+          .setLngLat([lng, lat])
+          .addTo(this.map);
+      }
+    });
   }
 
   private syncMarkers(locations: TravelLocation[]): void {

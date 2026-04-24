@@ -1,6 +1,6 @@
 <div class="app-shell" [class.light-mode]="!isDarkMode">
 
-  <!-- ── macOS-style Top Bar ─────────────────────────────────────────── -->
+  <!-- ── macOS-style Top Bar (liquid glass) ─────────────────────────── -->
   <nav class="topbar">
     <!-- Brand (left) -->
     <div class="topbar-brand">
@@ -8,56 +8,14 @@
       <span class="brand-name">{{ t('appName') }}</span>
     </div>
 
-    <!-- Menu items (center-left) -->
+    <!-- Menu items -->
     <div class="topbar-menu">
-
-      <!-- List button -->
       <div class="menu-item" [class.active]="showListPanel">
         <button class="menu-btn" (click)="toggleListPanel()">{{ t('list') }}</button>
-
-        <!-- List dropdown -->
-        <div class="dropdown-panel list-panel" *ngIf="showListPanel" (click)="$event.stopPropagation()">
-          <div class="dropdown-header">
-            <input
-              class="search-input"
-              type="text"
-              [(ngModel)]="searchQuery"
-              [placeholder]="t('search')"
-            />
-          </div>
-          <ul class="location-list">
-            <li *ngFor="let loc of filteredLocations" class="location-item" (click)="openLocationFromList(loc)">
-              <span class="loc-dot" [style.background]="loc.markerColor || '#E74C3C'"></span>
-              <span class="loc-name">{{ loc.name }}</span>
-              <span class="loc-date">{{ loc.visitDate }}</span>
-            </li>
-            <li *ngIf="filteredLocations.length === 0" class="no-results">{{ t('noResults') }}</li>
-          </ul>
-        </div>
       </div>
-
-      <!-- Settings button -->
       <div class="menu-item" [class.active]="showSettingsPanel">
         <button class="menu-btn" (click)="toggleSettingsPanel()">{{ t('settings') }}</button>
-
-        <!-- Settings dropdown -->
-        <div class="dropdown-panel settings-panel" *ngIf="showSettingsPanel" (click)="$event.stopPropagation()">
-          <div class="settings-section">
-            <span class="settings-label">{{ t('language') }}</span>
-            <button class="settings-btn" (click)="toggleLang()">
-              {{ currentLang === 'zh' ? 'English' : '中文' }}
-            </button>
-          </div>
-          <div class="settings-divider"></div>
-          <div class="settings-section">
-            <span class="settings-label">{{ t('theme') }}</span>
-            <button class="settings-btn theme-btn" (click)="toggleTheme()">
-              {{ isDarkMode ? t('light') : t('dark') }}
-            </button>
-          </div>
-        </div>
       </div>
-
     </div>
 
     <!-- Right controls -->
@@ -74,15 +32,15 @@
     </div>
   </nav>
 
-  <!-- Backdrop to close panels -->
+  <!-- Backdrop to close panel windows -->
   <div class="panel-backdrop" *ngIf="showListPanel || showSettingsPanel" (click)="closeAllPanels()"></div>
 
   <!-- ── Full-screen 3D Map ──────────────────────────────────────────── -->
   <div class="map-wrapper">
-    <app-map (locationSelected)="onLocationSelected($event)"></app-map>
+    <app-map #mapComp (locationSelected)="onLocationSelected($event)"></app-map>
   </div>
 
-  <!-- ── macOS Windows (multi-window support) ───────────────────────── -->
+  <!-- ── macOS Windows (multi-window location panels) ───────────────── -->
   <ng-container *ngFor="let loc of visibleWindows">
     <app-location-panel
       [location]="loc"
@@ -90,6 +48,79 @@
       (minimizeToggled)="onMinimizeToggled(loc)"
     ></app-location-panel>
   </ng-container>
+
+  <!-- ── List macOS Window ──────────────────────────────────────────── -->
+  <div
+    class="app-macos-window list-window"
+    *ngIf="showListPanel"
+    [style.left.px]="listWindowX"
+    [style.top.px]="listWindowY"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="app-win-titlebar" (mousedown)="onListTitleBarMouseDown($event)">
+      <div class="app-traffic-lights">
+        <button class="app-tl app-tl-close" (click)="showListPanel = false; $event.stopPropagation()">
+          <span class="app-tl-icon">✕</span>
+        </button>
+        <button class="app-tl app-tl-min" disabled><span class="app-tl-icon">−</span></button>
+        <button class="app-tl app-tl-max" disabled><span class="app-tl-icon">⤢</span></button>
+      </div>
+      <span class="app-win-title">{{ t('locations') }}</span>
+    </div>
+    <div class="app-win-body">
+      <div class="app-win-search">
+        <input
+          class="search-input"
+          type="text"
+          [(ngModel)]="searchQuery"
+          [placeholder]="t('search')"
+        />
+      </div>
+      <ul class="location-list">
+        <li *ngFor="let loc of filteredLocations" class="location-item" (click)="openLocationFromList(loc)">
+          <span class="loc-dot" [style.background]="loc.markerColor || '#E74C3C'"></span>
+          <span class="loc-name">{{ loc.name }}</span>
+          <span class="loc-date">{{ loc.visitDate }}</span>
+        </li>
+        <li *ngIf="filteredLocations.length === 0" class="no-results">{{ t('noResults') }}</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── Settings macOS Window ─────────────────────────────────────── -->
+  <div
+    class="app-macos-window settings-window"
+    *ngIf="showSettingsPanel"
+    [style.left.px]="settingsWindowX"
+    [style.top.px]="settingsWindowY"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="app-win-titlebar" (mousedown)="onSettingsTitleBarMouseDown($event)">
+      <div class="app-traffic-lights">
+        <button class="app-tl app-tl-close" (click)="showSettingsPanel = false; $event.stopPropagation()">
+          <span class="app-tl-icon">✕</span>
+        </button>
+        <button class="app-tl app-tl-min" disabled><span class="app-tl-icon">−</span></button>
+        <button class="app-tl app-tl-max" disabled><span class="app-tl-icon">⤢</span></button>
+      </div>
+      <span class="app-win-title">{{ t('settingsTitle') }}</span>
+    </div>
+    <div class="app-win-body settings-body">
+      <div class="settings-row">
+        <span class="settings-label">{{ t('language') }}</span>
+        <button class="settings-btn" (click)="toggleLang()">
+          {{ currentLang === 'zh' ? 'English' : '中文' }}
+        </button>
+      </div>
+      <div class="settings-divider"></div>
+      <div class="settings-row">
+        <span class="settings-label">{{ t('theme') }}</span>
+        <button class="settings-btn" (click)="toggleTheme()">
+          {{ isDarkMode ? t('light') : t('dark') }}
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- ── Minimized Windows Dock ─────────────────────────────────────── -->
   <div class="minimized-dock" *ngIf="minimizedWindows.length > 0">
@@ -101,7 +132,6 @@
           <span class="dock-item-name">{{ loc.name }}</span>
           <button class="dock-item-close" (click)="onWindowClosed(loc); $event.stopPropagation()">✕</button>
         </div>
-        <span *ngIf="minimizedWindows.length === 0" class="dock-empty">{{ t('noMinimized') }}</span>
       </div>
     </div>
   </div>

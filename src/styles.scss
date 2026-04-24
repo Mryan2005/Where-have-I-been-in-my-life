@@ -67,3 +67,29 @@ html.light-mode body {
 .maplibregl-ctrl-attrib {
   font-size: 10px !important;
 }
+
+/* ── User location anchor marker ────────────────────────────────── */
+.user-location-marker {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #007AFF;
+  border: 3px solid rgba(255, 255, 255, 0.95);
+  box-shadow:
+    0 0 0 3px rgba(0, 122, 255, 0.35),
+    0 2px 8px rgba(0, 0, 0, 0.4);
+  animation: user-location-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes user-location-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 3px rgba(0, 122, 255, 0.35),
+      0 2px 8px rgba(0, 0, 0, 0.4);
+  }
+  50% {
+    box-shadow:
+      0 0 0 9px rgba(0, 122, 255, 0.12),
+      0 2px 8px rgba(0, 0, 0, 0.4);
+  }
+}

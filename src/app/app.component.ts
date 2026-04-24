@@ -1,7 +1,11 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import {
+  Component, OnInit, OnDestroy, ViewChild,
+  HostListener, AfterViewInit
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { LocationService } from './services/location.service';
 import { TravelLocation } from './models/location.model';
+import { MapComponent } from './components/map/map.component';
 
 type Lang = 'zh' | 'en';
 
@@ -19,6 +23,8 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     noResults: '没有匹配的地点',
     noMinimized: '没有最小化的窗口',
     restore: '恢复',
+    locations: '地点列表',
+    settingsTitle: '偏好设置',
   },
   en: {
     appName: 'Where I\'ve Been',
@@ -33,6 +39,8 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     noResults: 'No matching locations',
     noMinimized: 'No minimized windows',
     restore: 'Restore',
+    locations: 'Locations',
+    settingsTitle: 'Preferences',
   },
 };
 
@@ -42,14 +50,30 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
   styleUrl: './app.component.scss',
   standalone: false,
 })
-export class AppComponent implements OnInit, OnDestroy {
+export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild(MapComponent) mapComp!: MapComponent;
+
   // ── Multi-window state ─────────────────────────────────────────────────────
   openWindows: TravelLocation[] = [];
   minimizedWindowIds = new Set<string>();
 
-  // ── Panel visibility ───────────────────────────────────────────────────────
+  // ── Panel window visibility ────────────────────────────────────────────────
   showListPanel = false;
   showSettingsPanel = false;
+
+  // ── List window drag state ─────────────────────────────────────────────────
+  listWindowX = 80;
+  listWindowY = 60;
+  private listWinDragging = false;
+  private listWinOffsetX = 0;
+  private listWinOffsetY = 0;
+
+  // ── Settings window drag state ─────────────────────────────────────────────
+  settingsWindowX = 260;
+  settingsWindowY = 60;
+  private settingsWinDragging = false;
+  private settingsWinOffsetX = 0;
+  private settingsWinOffsetY = 0;
 
   // ── List search ────────────────────────────────────────────────────────────
   searchQuery = '';
@@ -69,6 +93,8 @@ export class AppComponent implements OnInit, OnDestroy {
     });
     this.applyTheme();
   }
+
+  ngAfterViewInit(): void { /* mapComp is now available */ }
 
   ngOnDestroy(): void {
     this.sub?.unsubscribe();
@@ -114,7 +140,6 @@ export class AppComponent implements OnInit, OnDestroy {
 
   onMinimizeToggled(loc: TravelLocation): void {
     this.minimizedWindowIds.add(loc.id);
-    // Force change detection on the Set
     this.minimizedWindowIds = new Set(this.minimizedWindowIds);
   }
 
@@ -123,11 +148,13 @@ export class AppComponent implements OnInit, OnDestroy {
     this.minimizedWindowIds = new Set(this.minimizedWindowIds);
   }
 
+  /** Open location detail window and fly the map to it. */
   openLocationFromList(loc: TravelLocation): void {
     this.onLocationSelected(loc);
+    this.mapComp?.flyTo(loc.longitude, loc.latitude);
   }
 
-  // ── Topbar panel toggles ───────────────────────────────────────────────────
+  // ── Topbar panel window toggles ────────────────────────────────────────────
   toggleListPanel(): void {
     this.showListPanel = !this.showListPanel;
     if (this.showListPanel) this.showSettingsPanel = false;
@@ -138,11 +165,43 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.showSettingsPanel) this.showListPanel = false;
   }
 
-  toggleDock(): void { /* dock auto-shows when minimized windows exist */ }
-
   closeAllPanels(): void {
     this.showListPanel = false;
     this.showSettingsPanel = false;
+  }
+
+  // ── List window drag ───────────────────────────────────────────────────────
+  onListTitleBarMouseDown(e: MouseEvent): void {
+    this.listWinDragging = true;
+    this.listWinOffsetX = e.clientX - this.listWindowX;
+    this.listWinOffsetY = e.clientY - this.listWindowY;
+    e.preventDefault();
+  }
+
+  // ── Settings window drag ───────────────────────────────────────────────────
+  onSettingsTitleBarMouseDown(e: MouseEvent): void {
+    this.settingsWinDragging = true;
+    this.settingsWinOffsetX = e.clientX - this.settingsWindowX;
+    this.settingsWinOffsetY = e.clientY - this.settingsWindowY;
+    e.preventDefault();
+  }
+
+  @HostListener('document:mousemove', ['$event'])
+  onDocMouseMove(e: MouseEvent): void {
+    if (this.listWinDragging) {
+      this.listWindowX = e.clientX - this.listWinOffsetX;
+      this.listWindowY = e.clientY - this.listWinOffsetY;
+    }
+    if (this.settingsWinDragging) {
+      this.settingsWindowX = e.clientX - this.settingsWinOffsetX;
+      this.settingsWindowY = e.clientY - this.settingsWinOffsetY;
+    }
+  }
+
+  @HostListener('document:mouseup')
+  onDocMouseUp(): void {
+    this.listWinDragging = false;
+    this.settingsWinDragging = false;
   }
 
   // ── i18n & theme ──────────────────────────────────────────────────────────
