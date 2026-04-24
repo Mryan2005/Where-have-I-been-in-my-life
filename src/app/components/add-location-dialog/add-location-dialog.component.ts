@@ -7,6 +7,7 @@ import { TravelLocation } from '../../models/location.model';
   selector: 'app-add-location-dialog',
   templateUrl: './add-location-dialog.component.html',
   styleUrl: './add-location-dialog.component.scss',
+  standalone: false,
 })
 export class AddLocationDialogComponent implements OnChanges {
   /** Pre-filled lat/lng from map click (add mode) */

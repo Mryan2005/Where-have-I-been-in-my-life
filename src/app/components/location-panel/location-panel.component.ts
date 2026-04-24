@@ -11,6 +11,7 @@ import { TravelLocation } from '../../models/location.model';
   selector: 'app-location-panel',
   templateUrl: './location-panel.component.html',
   styleUrl: './location-panel.component.scss',
+  standalone: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LocationPanelComponent implements OnChanges {
