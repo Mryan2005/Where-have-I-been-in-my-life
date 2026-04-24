@@ -50,7 +50,6 @@ export class AppComponent implements OnInit, OnDestroy {
   // ── Panel visibility ───────────────────────────────────────────────────────
   showListPanel = false;
   showSettingsPanel = false;
-  showDock = false;
 
   // ── List search ────────────────────────────────────────────────────────────
   searchQuery = '';
@@ -139,9 +138,7 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.showSettingsPanel) this.showListPanel = false;
   }
 
-  toggleDock(): void {
-    this.showDock = !this.showDock;
-  }
+  toggleDock(): void { /* dock auto-shows when minimized windows exist */ }
 
   closeAllPanels(): void {
     this.showListPanel = false;
