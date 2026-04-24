@@ -65,7 +65,7 @@
       <button
         class="dock-toggle-btn"
         [class.has-minimized]="minimizedWindows.length > 0"
-        (click)="toggleDock()"
+        [disabled]="minimizedWindows.length === 0"
         [title]="t('minimizedWindows')"
       >
         <span class="dock-icon">⊟</span>
@@ -92,7 +92,7 @@
   </ng-container>
 
   <!-- ── Minimized Windows Dock ─────────────────────────────────────── -->
-  <div class="minimized-dock" *ngIf="showDock || minimizedWindows.length > 0">
+  <div class="minimized-dock" *ngIf="minimizedWindows.length > 0">
     <div class="dock-bar">
       <span class="dock-label">{{ t('minimizedWindows') }}</span>
       <div class="dock-items">
