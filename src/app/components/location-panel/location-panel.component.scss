@@ -19,15 +19,9 @@
     0 4px 16px rgba(0, 0, 0, 0.4);
   overflow: hidden;
   pointer-events: all;
-  transition: height 0.25s ease, border-radius 0.25s ease;
   font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
   color: #f0f0f0;
   user-select: none;
-
-  &.minimized {
-    border-radius: 10px;
-    .window-body { display: none; }
-  }
 
   &.maximized {
     border-radius: 0;
@@ -93,12 +87,6 @@
   letter-spacing: 0.2px;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.window-date {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.4);
   white-space: nowrap;
 }
 
@@ -197,27 +185,4 @@
     a { color: #5E9CF5; text-decoration: none; &:hover { text-decoration: underline; } }
     hr { border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 16px 0; }
   }
-}
-
-// Footer
-.window-footer {
-  display: flex;
-  justify-content: flex-end;
-  padding: 8px 16px;
-  border-top: 1px solid rgba(255,255,255,0.06);
-  flex-shrink: 0;
-}
-
-.btn-edit {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255,255,255,0.12);
-  color: #ccc;
-  padding: 5px 14px;
-  border-radius: 6px;
-  font-size: 12px;
-  cursor: pointer;
-  transition: background 0.15s;
-
-  &:hover { background: rgba(255,255,255,0.14); color: #fff; }
-  &:active { background: rgba(255,255,255,0.06); }
 }

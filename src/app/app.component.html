@@ -1,38 +1,109 @@
-<div class="app-shell">
-  <!-- Top navigation bar -->
+<div class="app-shell" [class.light-mode]="!isDarkMode">
+
+  <!-- ── macOS-style Top Bar ─────────────────────────────────────────── -->
   <nav class="topbar">
+    <!-- Brand (left) -->
     <div class="topbar-brand">
       <span class="brand-icon">🌏</span>
-      <span class="brand-name">我去过的地方</span>
+      <span class="brand-name">{{ t('appName') }}</span>
     </div>
-    <button class="btn-add-nav" (click)="openAddDialog()" title="添加新地点">
-      <span>＋</span> 添加地点
-    </button>
+
+    <!-- Menu items (center-left) -->
+    <div class="topbar-menu">
+
+      <!-- List button -->
+      <div class="menu-item" [class.active]="showListPanel">
+        <button class="menu-btn" (click)="toggleListPanel()">{{ t('list') }}</button>
+
+        <!-- List dropdown -->
+        <div class="dropdown-panel list-panel" *ngIf="showListPanel" (click)="$event.stopPropagation()">
+          <div class="dropdown-header">
+            <input
+              class="search-input"
+              type="text"
+              [(ngModel)]="searchQuery"
+              [placeholder]="t('search')"
+            />
+          </div>
+          <ul class="location-list">
+            <li *ngFor="let loc of filteredLocations" class="location-item" (click)="openLocationFromList(loc)">
+              <span class="loc-dot" [style.background]="loc.markerColor || '#E74C3C'"></span>
+              <span class="loc-name">{{ loc.name }}</span>
+              <span class="loc-date">{{ loc.visitDate }}</span>
+            </li>
+            <li *ngIf="filteredLocations.length === 0" class="no-results">{{ t('noResults') }}</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Settings button -->
+      <div class="menu-item" [class.active]="showSettingsPanel">
+        <button class="menu-btn" (click)="toggleSettingsPanel()">{{ t('settings') }}</button>
+
+        <!-- Settings dropdown -->
+        <div class="dropdown-panel settings-panel" *ngIf="showSettingsPanel" (click)="$event.stopPropagation()">
+          <div class="settings-section">
+            <span class="settings-label">{{ t('language') }}</span>
+            <button class="settings-btn" (click)="toggleLang()">
+              {{ currentLang === 'zh' ? 'English' : '中文' }}
+            </button>
+          </div>
+          <div class="settings-divider"></div>
+          <div class="settings-section">
+            <span class="settings-label">{{ t('theme') }}</span>
+            <button class="settings-btn theme-btn" (click)="toggleTheme()">
+              {{ isDarkMode ? t('light') : t('dark') }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right controls -->
+    <div class="topbar-right">
+      <button
+        class="dock-toggle-btn"
+        [class.has-minimized]="minimizedWindows.length > 0"
+        (click)="toggleDock()"
+        [title]="t('minimizedWindows')"
+      >
+        <span class="dock-icon">⊟</span>
+        <span *ngIf="minimizedWindows.length > 0" class="dock-badge">{{ minimizedWindows.length }}</span>
+      </button>
+    </div>
   </nav>
 
-  <!-- Full-screen 3D map -->
+  <!-- Backdrop to close panels -->
+  <div class="panel-backdrop" *ngIf="showListPanel || showSettingsPanel" (click)="closeAllPanels()"></div>
+
+  <!-- ── Full-screen 3D Map ──────────────────────────────────────────── -->
   <div class="map-wrapper">
-    <app-map
-      (locationSelected)="onLocationSelected($event)"
-      (mapClicked)="onMapClicked($event)"
-    ></app-map>
+    <app-map (locationSelected)="onLocationSelected($event)"></app-map>
   </div>
 
-  <!-- macOS window for location detail -->
-  <app-location-panel
-    *ngIf="selectedLocation"
-    [location]="selectedLocation"
-    (closed)="onPanelClosed()"
-    (editRequested)="onEditRequested($event)"
-  ></app-location-panel>
+  <!-- ── macOS Windows (multi-window support) ───────────────────────── -->
+  <ng-container *ngFor="let loc of visibleWindows">
+    <app-location-panel
+      [location]="loc"
+      (closed)="onWindowClosed(loc)"
+      (minimizeToggled)="onMinimizeToggled(loc)"
+    ></app-location-panel>
+  </ng-container>
 
-  <!-- Add / Edit dialog -->
-  <app-add-location-dialog
-    *ngIf="showDialog"
-    [initialLat]="dialogInitialLat"
-    [initialLng]="dialogInitialLng"
-    [editLocation]="editingLocation"
-    (saved)="onLocationSaved($event)"
-    (cancelled)="onDialogCancelled()"
-  ></app-add-location-dialog>
+  <!-- ── Minimized Windows Dock ─────────────────────────────────────── -->
+  <div class="minimized-dock" *ngIf="showDock || minimizedWindows.length > 0">
+    <div class="dock-bar">
+      <span class="dock-label">{{ t('minimizedWindows') }}</span>
+      <div class="dock-items">
+        <div *ngFor="let loc of minimizedWindows" class="dock-item" (click)="restoreWindow(loc)">
+          <span class="dock-item-dot" [style.background]="loc.markerColor || '#E74C3C'"></span>
+          <span class="dock-item-name">{{ loc.name }}</span>
+          <button class="dock-item-close" (click)="onWindowClosed(loc); $event.stopPropagation()">✕</button>
+        </div>
+        <span *ngIf="minimizedWindows.length === 0" class="dock-empty">{{ t('noMinimized') }}</span>
+      </div>
+    </div>
+  </div>
+
 </div>

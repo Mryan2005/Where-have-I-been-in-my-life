@@ -17,10 +17,9 @@ import { TravelLocation } from '../../models/location.model';
 export class LocationPanelComponent implements OnChanges {
   @Input() location!: TravelLocation;
   @Output() closed = new EventEmitter<void>();
-  @Output() editRequested = new EventEmitter<TravelLocation>();
+  @Output() minimizeToggled = new EventEmitter<void>();
 
   renderedContent = '';
-  isMinimized = false;
   isMaximized = false;
 
   windowX = 120;
@@ -42,7 +41,6 @@ export class LocationPanelComponent implements OnChanges {
     if (changes['location'] && this.location) {
       const raw = marked.parse(this.location.content ?? '') as string;
       this.renderedContent = this.sanitizer.sanitize(SecurityContext.HTML, raw) ?? '';
-      this.isMinimized = false;
     }
   }
 
@@ -69,7 +67,7 @@ export class LocationPanelComponent implements OnChanges {
   // ── Traffic-light buttons ───────────────────────────────────────────────────
   close(): void { this.closed.emit(); }
 
-  toggleMinimize(): void { this.isMinimized = !this.isMinimized; }
+  minimize(): void { this.minimizeToggled.emit(); }
 
   toggleMaximize(): void {
     if (this.isMaximized) {
@@ -91,6 +89,4 @@ export class LocationPanelComponent implements OnChanges {
     }
     this.cdr.markForCheck();
   }
-
-  requestEdit(): void { this.editRequested.emit(this.location); }
 }
