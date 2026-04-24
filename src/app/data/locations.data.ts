@@ -15,7 +15,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     longitude: 116.3972,
     visitDate: '2023-10-01',
     markerColor: '#E74C3C',
-    images: [],
+    images: ['https://tse4-mm.cn.bing.net/th/id/OIP-C.0jtJZv1orU29loRFE39abgHaE7?w=250&h=180&c=7&r=0&o=7&dpr=1.9&pid=1.7&rm=3'],
     content: `# 故宫 — 紫禁城
 
 > 走在朱红宫墙之间，历史扑面而来。
