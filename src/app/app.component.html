@@ -83,7 +83,7 @@
         <li *ngFor="let loc of filteredLocations" class="location-item" (click)="openLocationFromList(loc)">
           <span class="loc-dot" [style.background]="loc.markerColor || '#E74C3C'"></span>
           <span class="loc-name">{{ loc.name }}</span>
-          <span class="loc-date">{{ loc.visitDate }}</span>
+          <span class="loc-date">{{ loc.firstVisitDate }}</span>
         </li>
         <li *ngIf="filteredLocations.length === 0" class="no-results">{{ t('noResults') }}</li>
       </ul>
