@@ -172,7 +172,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     for (let d = 1; d <= lastOfMonth.getDate(); d++) {
       const date = new Date(year, month, d);
       const dateStr = this.toDateStr(date);
-      const locations = this.allLocations.filter(l => l.visitDate === dateStr);
+      const locations = this.allLocations.filter(l => l.firstVisitDate === dateStr);
       days.push({
         date,
         dayNum: d,
