@@ -13,7 +13,7 @@ export interface TravelLocation {
   /** Geographic longitude (-180 to 180) */
   longitude: number;
   /** ISO 8601 date string of the visit */
-  visitDate: string;
+  firstVisitDate: string;
   /** Base64-encoded or remote image URLs */
   images: string[];
   /** Optional hex color for the marker (defaults to '#E74C3C') */
