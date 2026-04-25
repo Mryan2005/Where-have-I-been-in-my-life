@@ -21,7 +21,7 @@ export class AddLocationDialogComponent implements OnChanges {
 
   name = '';
   content = '';
-  visitDate = '';
+  firstVisitDate = '';
   latitude = 0;
   longitude = 0;
   markerColor = '#E74C3C';
@@ -32,7 +32,7 @@ export class AddLocationDialogComponent implements OnChanges {
       const l = this.editLocation;
       this.name = l.name;
       this.content = l.content;
-      this.visitDate = l.visitDate;
+      this.firstVisitDate = l.firstVisitDate;
       this.latitude = l.latitude;
       this.longitude = l.longitude;
       this.markerColor = l.markerColor ?? '#E74C3C';
@@ -68,7 +68,7 @@ export class AddLocationDialogComponent implements OnChanges {
       id: this.editLocation?.id ?? crypto.randomUUID(),
       name: this.name.trim(),
       content: this.content,
-      visitDate: this.visitDate,
+      firstVisitDate: this.firstVisitDate,
       latitude: +this.latitude,
       longitude: +this.longitude,
       markerColor: this.markerColor,
@@ -86,7 +86,7 @@ export class AddLocationDialogComponent implements OnChanges {
   private reset(): void {
     this.name = '';
     this.content = '';
-    this.visitDate = '';
+    this.firstVisitDate = '';
     this.latitude = 0;
     this.longitude = 0;
     this.markerColor = '#E74C3C';
