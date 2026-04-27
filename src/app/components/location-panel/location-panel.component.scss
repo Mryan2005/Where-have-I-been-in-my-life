@@ -49,8 +49,8 @@
 }
 
 .tl {
-  width: 13px;
-  height: 13px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   border: none;
   cursor: pointer;
@@ -61,7 +61,7 @@
   transition: filter 0.15s;
 
   .tl-icon {
-    font-size: 8px;
+    font-size: 9px;
     opacity: 0;
     line-height: 1;
     color: rgba(0, 0, 0, 0.7);
