@@ -44,6 +44,7 @@ html.light-mode body {
     transform: rotate(-45deg);
     border: 3px solid rgba(255, 255, 255, 0.9);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    transition: border-radius 0.2s ease, transform 0.2s ease;
   }
 
   .marker-label {
@@ -60,6 +61,19 @@ html.light-mode body {
     max-width: 100px;
     overflow: hidden;
     text-overflow: ellipsis;
+    transition: opacity 0.2s ease;
+  }
+
+  /* When labels are hidden the pin becomes a plain circle */
+  &.no-label {
+    .marker-pin {
+      border-radius: 50%;
+      transform: none;
+    }
+
+    .marker-label {
+      display: none;
+    }
   }
 }
 

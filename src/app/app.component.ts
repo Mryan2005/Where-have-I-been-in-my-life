@@ -99,6 +99,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   // ── Multi-window state ─────────────────────────────────────────────────────
   openWindows: TravelLocation[] = [];
   minimizedWindowIds = new Set<string>();
+  private windowZIndexCounter = 1000;
+  windowZIndexes = new Map<string, number>();
 
   // ── Panel window visibility ────────────────────────────────────────────────
   showListPanel = false;
@@ -111,6 +113,12 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   isFullscreen = false;
   showTerrain = true;
   showAtmosphere = true;
+
+  // ── Calendar picker state ──────────────────────────────────────────────────
+  calPickerMode = false;
+  calPickerYear: number = new Date().getFullYear();
+  calDayLocations: TravelLocation[] = [];   // locations for selected day
+  calDayDate = '';                          // display label for selected day
 
   // ── About window ───────────────────────────────────────────────────────────
   showAboutPanel = false;
@@ -288,7 +296,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     return days;
   }
 
-  private toDateStr(date: Date): string {
+  toDateStr(date: Date): string {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, '0');
     const d = String(date.getDate()).padStart(2, '0');
@@ -322,10 +330,52 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onCalendarDayClicked(day: CalendarDay): void {
     if (!day.locations.length) return;
-    // Only fly to the first location — do NOT open detail windows
-    const first = day.locations[0];
-    this.mapComp?.flyTo(first.longitude, first.latitude);
+    if (this.calDayLocations.length && this.calDayDate === this.toDateStr(day.date)) {
+      // Second click on same day: clear selection
+      this.calDayLocations = [];
+      this.calDayDate = '';
+      return;
+    }
+    // Show location list for this day
+    this.calDayLocations = day.locations;
+    this.calDayDate = this.toDateStr(day.date);
+  }
+
+  /** Fly to a location from the cal-day locations panel */
+  flyToCalLoc(loc: TravelLocation): void {
+    this.mapComp?.flyTo(loc.longitude, loc.latitude);
     this.closeAllPanels();
+  }
+
+  /** Toggle year/month picker mode */
+  toggleCalPicker(): void {
+    this.calPickerMode = !this.calPickerMode;
+    if (this.calPickerMode) {
+      this.calPickerYear = this.calendarYear;
+      this.calDayLocations = [];
+      this.calDayDate = '';
+    }
+  }
+
+  /** Select year + month from picker */
+  selectYearMonth(year: number, month: number): void {
+    this.calendarYear = year;
+    this.calendarMonth = month;
+    this.calPickerMode = false;
+    this.calDayLocations = [];
+    this.calDayDate = '';
+  }
+
+  /** Years available in the picker (10 years back, 5 ahead) */
+  get calPickerYears(): number[] {
+    const base = this.calPickerYear - 4;
+    return Array.from({ length: 9 }, (_, i) => base + i);
+  }
+
+  get calPickerMonthNames(): string[] {
+    return this.currentLang === 'zh'
+      ? ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月']
+      : ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   }
 
   // ── Filtered locations for list panel ─────────────────────────────────────
@@ -345,6 +395,16 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.openWindows.filter(l => !this.minimizedWindowIds.has(l.id));
   }
 
+  // ── Window z-index management ──────────────────────────────────────────────
+  getWindowZIndex(loc: TravelLocation): number {
+    return this.windowZIndexes.get(loc.id) ?? 1000;
+  }
+
+  onWindowFocused(loc: TravelLocation): void {
+    this.windowZIndexCounter++;
+    this.windowZIndexes.set(loc.id, this.windowZIndexCounter);
+  }
+
   // ── Window management ──────────────────────────────────────────────────────
   onLocationSelected(loc: TravelLocation): void {
     const existing = this.openWindows.find(w => w.id === loc.id);
@@ -357,6 +417,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       .forEach(w => this.minimizedWindowIds.add(w.id));
     this.minimizedWindowIds = new Set(this.minimizedWindowIds);
     this.minimizedWindowIds.delete(loc.id);
+    // Bring this window to the front
+    this.onWindowFocused(loc);
     this.showListPanel = false;
     this.showCalendarPanel = false;
   }
@@ -396,6 +458,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   toggleCalendarPanel(): void {
     this.showCalendarPanel = !this.showCalendarPanel;
     if (this.showCalendarPanel) { this.showListPanel = false; this.showSettingsPanel = false; this.showWindowPanel = false; }
+    if (!this.showCalendarPanel) { this.calPickerMode = false; this.calDayLocations = []; this.calDayDate = ''; }
   }
 
   toggleSettingsPanel(): void {
@@ -414,6 +477,9 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.showCalendarPanel = false;
     this.showAboutPanel = false;
     this.showWindowPanel = false;
+    this.calDayLocations = [];
+    this.calDayDate = '';
+    this.calPickerMode = false;
   }
 
   // ── About window ───────────────────────────────────────────────────────────
@@ -462,7 +528,9 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   // ── Bring a window to front from the Window menu ──────────────────────────
   bringWindowToFront(loc: TravelLocation): void {
     this.restoreWindow(loc);
+    this.onWindowFocused(loc);
     this.mapComp?.flyTo(loc.longitude, loc.latitude);
+    this.showWindowPanel = false;
   }
 
   // ── Dock toggle ────────────────────────────────────────────────────────────
