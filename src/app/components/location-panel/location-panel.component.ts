@@ -1,7 +1,7 @@
 import {
   Component, Input, Output, EventEmitter, OnChanges,
   SimpleChanges, HostListener, ChangeDetectionStrategy, ChangeDetectorRef,
-  SecurityContext
+  SecurityContext, OnInit
 } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { marked } from 'marked';
@@ -14,7 +14,7 @@ import { TravelLocation } from '../../models/location.model';
   standalone: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LocationPanelComponent implements OnChanges {
+export class LocationPanelComponent implements OnInit, OnChanges {
   @Input() location!: TravelLocation;
   @Output() closed = new EventEmitter<void>();
   @Output() minimizeToggled = new EventEmitter<void>();
@@ -37,6 +37,16 @@ export class LocationPanelComponent implements OnChanges {
     private cdr: ChangeDetectorRef,
   ) {}
 
+  get isMobile(): boolean {
+    return typeof window !== 'undefined' && window.innerWidth < 768;
+  }
+
+  ngOnInit(): void {
+    if (this.isMobile) {
+      this.maximizeForMobile();
+    }
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['location'] && this.location) {
       const raw = marked.parse(this.location.content ?? '') as string;
@@ -44,13 +54,39 @@ export class LocationPanelComponent implements OnChanges {
     }
   }
 
-  // ── Title-bar drag ──────────────────────────────────────────────────────────
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    if (this.isMobile && !this.isMaximized) {
+      this.maximizeForMobile();
+      this.cdr.markForCheck();
+    }
+  }
+
+  private maximizeForMobile(): void {
+    this.savedState = { x: this.windowX, y: this.windowY, w: this.windowWidth, h: this.windowHeight };
+    this.windowX = 0;
+    this.windowY = 0;
+    this.windowWidth = window.innerWidth;
+    this.windowHeight = window.innerHeight;
+    this.isMaximized = true;
+  }
+
+  // ── Title-bar drag (mouse) ─────────────────────────────────────────────────
   onTitleBarMouseDown(event: MouseEvent): void {
     if (this.isMaximized) return;
     this.dragging = true;
     this.dragOffsetX = event.clientX - this.windowX;
     this.dragOffsetY = event.clientY - this.windowY;
     event.preventDefault();
+  }
+
+  // ── Title-bar drag (touch) ─────────────────────────────────────────────────
+  onTitleBarTouchStart(event: TouchEvent): void {
+    if (this.isMaximized) return;
+    const touch = event.touches[0];
+    this.dragging = true;
+    this.dragOffsetX = touch.clientX - this.windowX;
+    this.dragOffsetY = touch.clientY - this.windowY;
   }
 
   @HostListener('document:mousemove', ['$event'])
@@ -61,8 +97,18 @@ export class LocationPanelComponent implements OnChanges {
     this.cdr.markForCheck();
   }
 
+  @HostListener('document:touchmove', ['$event'])
+  onTouchMove(event: TouchEvent): void {
+    if (!this.dragging) return;
+    const touch = event.touches[0];
+    this.windowX = touch.clientX - this.dragOffsetX;
+    this.windowY = touch.clientY - this.dragOffsetY;
+    this.cdr.markForCheck();
+  }
+
   @HostListener('document:mouseup')
-  onMouseUp(): void { this.dragging = false; }
+  @HostListener('document:touchend')
+  onPointerUp(): void { this.dragging = false; }
 
   // ── Traffic-light buttons ───────────────────────────────────────────────────
   close(): void { this.closed.emit(); }
