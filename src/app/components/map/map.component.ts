@@ -55,6 +55,14 @@ export class MapComponent implements OnInit, OnDestroy {
       this.map.addControl(geoControl, 'top-right');
 
       this.map.on('load', () => {
+        // Auto-trigger geolocation on first load if permission already granted
+        if ('geolocation' in navigator) {
+          navigator.permissions?.query({ name: 'geolocation' }).then(result => {
+            if (result.state === 'granted') {
+              geoControl.trigger();
+            }
+          }).catch(() => {/* ignore */});
+        }
         // 3-D terrain
         this.map.addSource('terrain', {
           type: 'raster-dem',
@@ -80,6 +88,12 @@ export class MapComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.sub?.unsubscribe();
     this.map?.remove();
+  }
+
+  /** Fly to user location and place a marker. Called externally on initial geolocation grant. */
+  setUserLocation(lng: number, lat: number): void {
+    this.placeUserMarker(lng, lat);
+    this.flyTo(lng, lat, 10);
   }
 
   /** Fly the map camera to the given coordinates. */

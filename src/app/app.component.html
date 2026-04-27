@@ -2,22 +2,94 @@
 
   <!-- ── macOS-style Top Bar (liquid glass) ─────────────────────────── -->
   <nav class="topbar">
-    <!-- Brand (left) -->
-    <div class="topbar-brand">
+    <!-- Brand (left) — click to show About -->
+    <div class="topbar-brand" (click)="toggleAbout()">
       <span class="brand-icon">🌏</span>
       <span class="brand-name">{{ t('appName') }}</span>
     </div>
 
-    <!-- Menu items -->
+    <!-- Menu items (dropdown style) -->
     <div class="topbar-menu">
+      <!-- List dropdown -->
       <div class="menu-item" [class.active]="showListPanel">
         <button class="menu-btn" (click)="toggleListPanel()">{{ t('list') }}</button>
+        <div class="dropdown" *ngIf="showListPanel" (click)="$event.stopPropagation()">
+          <div class="dropdown-search">
+            <input
+              class="search-input"
+              type="text"
+              [(ngModel)]="searchQuery"
+              [placeholder]="t('search')"
+            />
+          </div>
+          <ul class="location-list">
+            <li *ngFor="let loc of filteredLocations" class="location-item" (click)="jumpToLocation(loc)">
+              <span class="loc-dot" [style.background]="loc.markerColor || '#E74C3C'"></span>
+              <span class="loc-name">{{ loc.name }}</span>
+              <span class="loc-date">{{ loc.firstVisitDate }}</span>
+            </li>
+            <li *ngIf="filteredLocations.length === 0" class="no-results">{{ t('noResults') }}</li>
+          </ul>
+        </div>
       </div>
+
+      <!-- Calendar dropdown -->
       <div class="menu-item" [class.active]="showCalendarPanel">
         <button class="menu-btn" (click)="toggleCalendarPanel()">{{ t('calendar') }}</button>
+        <div class="dropdown dropdown-calendar" *ngIf="showCalendarPanel" (click)="$event.stopPropagation()">
+          <!-- Month navigation -->
+          <div class="cal-header">
+            <button class="cal-nav-btn" (click)="prevCalendarMonth()">‹</button>
+            <div class="cal-header-center">
+              <span class="cal-month-label">{{ calendarMonthLabel }}</span>
+              <button class="cal-today-btn" (click)="goToToday()">{{ currentLang === 'zh' ? '今天' : 'Today' }}</button>
+            </div>
+            <button class="cal-nav-btn" (click)="nextCalendarMonth()">›</button>
+          </div>
+          <!-- Day-of-week header row -->
+          <div class="cal-grid">
+            <div class="cal-day-name" *ngFor="let name of calendarDayNames">{{ name }}</div>
+            <!-- Calendar day cells -->
+            <div
+              *ngFor="let day of calendarDays"
+              class="cal-day"
+              [class.other-month]="!day.isCurrentMonth"
+              [class.today]="day.isToday"
+              [class.has-visit]="day.locations.length > 0"
+              (click)="onCalendarDayClicked(day)"
+              [title]="day.locations.length > 0 ? day.locations[0].name + (day.locations.length > 1 ? (' +' + (day.locations.length - 1)) : '') : ''"
+            >
+              <span class="cal-day-num">{{ day.dayNum }}</span>
+              <div class="cal-dots" *ngIf="day.locations.length > 0">
+                <span
+                  *ngFor="let loc of day.locations.slice(0, 3)"
+                  class="cal-dot"
+                  [style.background]="loc.markerColor || '#E74C3C'"
+                ></span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <!-- Settings dropdown -->
       <div class="menu-item" [class.active]="showSettingsPanel">
         <button class="menu-btn" (click)="toggleSettingsPanel()">{{ t('settings') }}</button>
+        <div class="dropdown dropdown-settings" *ngIf="showSettingsPanel" (click)="$event.stopPropagation()">
+          <div class="settings-row">
+            <span class="settings-label">{{ t('language') }}</span>
+            <button class="settings-btn" (click)="toggleLang()">
+              {{ currentLang === 'zh' ? 'English' : '中文' }}
+            </button>
+          </div>
+          <div class="settings-divider"></div>
+          <div class="settings-row">
+            <span class="settings-label">{{ t('theme') }}</span>
+            <button class="settings-btn" (click)="toggleTheme()">
+              {{ isDarkMode ? t('light') : t('dark') }}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -28,6 +100,7 @@
         [class.has-minimized]="minimizedWindows.length > 0"
         [disabled]="minimizedWindows.length === 0"
         [title]="t('minimizedWindows')"
+        (click)="toggleDock()"
       >
         <span class="dock-icon">⊟</span>
         <span *ngIf="minimizedWindows.length > 0" class="dock-badge">{{ minimizedWindows.length }}</span>
@@ -35,8 +108,8 @@
     </div>
   </nav>
 
-  <!-- Backdrop to close panel windows -->
-  <div class="panel-backdrop" *ngIf="showListPanel || showSettingsPanel || showCalendarPanel" (click)="closeAllPanels()"></div>
+  <!-- Backdrop to close panel dropdowns -->
+  <div class="panel-backdrop" *ngIf="showListPanel || showSettingsPanel || showCalendarPanel || showAboutPanel" (click)="closeAllPanels()"></div>
 
   <!-- ── Full-screen 3D Map ──────────────────────────────────────────── -->
   <div class="map-wrapper">
@@ -52,139 +125,47 @@
     ></app-location-panel>
   </ng-container>
 
-  <!-- ── List macOS Window ──────────────────────────────────────────── -->
+  <!-- ── About macOS Window ─────────────────────────────────────────── -->
   <div
-    class="app-macos-window list-window"
-    *ngIf="showListPanel"
-    [style.left.px]="listWindowX"
-    [style.top.px]="listWindowY"
+    class="app-macos-window about-window"
+    *ngIf="showAboutPanel"
+    [style.left.px]="aboutWindowX"
+    [style.top.px]="aboutWindowY"
     (click)="$event.stopPropagation()"
   >
-    <div class="app-win-titlebar" (mousedown)="onListTitleBarMouseDown($event)">
+    <div class="app-win-titlebar" (mousedown)="onAboutTitleBarMouseDown($event)">
       <div class="app-traffic-lights">
-        <button class="app-tl app-tl-close" (click)="showListPanel = false; $event.stopPropagation()">
+        <button class="app-tl app-tl-close" (click)="showAboutPanel = false; $event.stopPropagation()">
           <span class="app-tl-icon">✕</span>
         </button>
         <button class="app-tl app-tl-min" disabled><span class="app-tl-icon">−</span></button>
         <button class="app-tl app-tl-max" disabled><span class="app-tl-icon">⤢</span></button>
       </div>
-      <span class="app-win-title">{{ t('locations') }}</span>
+      <span class="app-win-title">{{ aboutContent[currentLang].title }}</span>
     </div>
-    <div class="app-win-body">
-      <div class="app-win-search">
-        <input
-          class="search-input"
-          type="text"
-          [(ngModel)]="searchQuery"
-          [placeholder]="t('search')"
-        />
+    <div class="app-win-body about-body">
+      <div class="about-app-icon">🌏</div>
+      <div class="about-app-name">{{ aboutContent[currentLang].appName }}</div>
+      <div class="about-version">{{ aboutContent[currentLang].version }}</div>
+      <div class="about-description">{{ aboutContent[currentLang].description }}</div>
+      <div class="about-divider"></div>
+      <div class="about-row">
+        <span class="about-label">{{ aboutContent[currentLang].author }}</span>
+        <span class="about-value">{{ aboutContent[currentLang].authorName }}</span>
       </div>
-      <ul class="location-list">
-        <li *ngFor="let loc of filteredLocations" class="location-item" (click)="openLocationFromList(loc)">
-          <span class="loc-dot" [style.background]="loc.markerColor || '#E74C3C'"></span>
-          <span class="loc-name">{{ loc.name }}</span>
-          <span class="loc-date">{{ loc.firstVisitDate }}</span>
-        </li>
-        <li *ngIf="filteredLocations.length === 0" class="no-results">{{ t('noResults') }}</li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- ── Settings macOS Window ─────────────────────────────────────── -->
-  <div
-    class="app-macos-window settings-window"
-    *ngIf="showSettingsPanel"
-    [style.left.px]="settingsWindowX"
-    [style.top.px]="settingsWindowY"
-    (click)="$event.stopPropagation()"
-  >
-    <div class="app-win-titlebar" (mousedown)="onSettingsTitleBarMouseDown($event)">
-      <div class="app-traffic-lights">
-        <button class="app-tl app-tl-close" (click)="showSettingsPanel = false; $event.stopPropagation()">
-          <span class="app-tl-icon">✕</span>
-        </button>
-        <button class="app-tl app-tl-min" disabled><span class="app-tl-icon">−</span></button>
-        <button class="app-tl app-tl-max" disabled><span class="app-tl-icon">⤢</span></button>
+      <div class="about-row">
+        <span class="about-label">{{ aboutContent[currentLang].tech }}</span>
+        <span class="about-value">{{ aboutContent[currentLang].techList }}</span>
       </div>
-      <span class="app-win-title">{{ t('settingsTitle') }}</span>
-    </div>
-    <div class="app-win-body settings-body">
-      <div class="settings-row">
-        <span class="settings-label">{{ t('language') }}</span>
-        <button class="settings-btn" (click)="toggleLang()">
-          {{ currentLang === 'zh' ? 'English' : '中文' }}
-        </button>
+      <div class="about-row">
+        <span class="about-label">{{ aboutContent[currentLang].license }}</span>
+        <span class="about-value">{{ aboutContent[currentLang].licenseText }}</span>
       </div>
-      <div class="settings-divider"></div>
-      <div class="settings-row">
-        <span class="settings-label">{{ t('theme') }}</span>
-        <button class="settings-btn" (click)="toggleTheme()">
-          {{ isDarkMode ? t('light') : t('dark') }}
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── Calendar macOS Window ─────────────────────────────────────── -->
-  <div
-    class="app-macos-window calendar-window"
-    *ngIf="showCalendarPanel"
-    [style.left.px]="calendarWindowX"
-    [style.top.px]="calendarWindowY"
-    (click)="$event.stopPropagation()"
-  >
-    <div class="app-win-titlebar" (mousedown)="onCalendarTitleBarMouseDown($event)">
-      <div class="app-traffic-lights">
-        <button class="app-tl app-tl-close" (click)="showCalendarPanel = false; $event.stopPropagation()">
-          <span class="app-tl-icon">✕</span>
-        </button>
-        <button class="app-tl app-tl-min" disabled><span class="app-tl-icon">−</span></button>
-        <button class="app-tl app-tl-max" disabled><span class="app-tl-icon">⤢</span></button>
-      </div>
-      <span class="app-win-title">{{ t('calendarTitle') }}</span>
-    </div>
-    <div class="app-win-body cal-body">
-
-      <!-- Month navigation -->
-      <div class="cal-header">
-        <button class="cal-nav-btn" (click)="prevCalendarMonth()">‹</button>
-        <div class="cal-header-center">
-          <span class="cal-month-label">{{ calendarMonthLabel }}</span>
-          <button class="cal-today-btn" (click)="goToToday()">{{ currentLang === 'zh' ? '今天' : 'Today' }}</button>
-        </div>
-        <button class="cal-nav-btn" (click)="nextCalendarMonth()">›</button>
-      </div>
-
-      <!-- Day-of-week header row -->
-      <div class="cal-grid">
-        <div class="cal-day-name" *ngFor="let name of calendarDayNames">{{ name }}</div>
-
-        <!-- Calendar day cells -->
-        <div
-          *ngFor="let day of calendarDays"
-          class="cal-day"
-          [class.other-month]="!day.isCurrentMonth"
-          [class.today]="day.isToday"
-          [class.has-visit]="day.locations.length > 0"
-          (click)="onCalendarDayClicked(day)"
-          [title]="day.locations.length > 0 ? day.locations[0].name + (day.locations.length > 1 ? (' +' + (day.locations.length - 1)) : '') : ''"
-        >
-          <span class="cal-day-num">{{ day.dayNum }}</span>
-          <div class="cal-dots" *ngIf="day.locations.length > 0">
-            <span
-              *ngFor="let loc of day.locations.slice(0, 3)"
-              class="cal-dot"
-              [style.background]="loc.markerColor || '#E74C3C'"
-            ></span>
-          </div>
-        </div>
-      </div>
-
     </div>
   </div>
 
   <!-- ── Minimized Windows Dock ─────────────────────────────────────── -->
-  <div class="minimized-dock" *ngIf="minimizedWindows.length > 0">
+  <div class="minimized-dock" *ngIf="showMinimizedDock && minimizedWindows.length > 0">
     <div class="dock-bar">
       <span class="dock-label">{{ t('minimizedWindows') }}</span>
       <div class="dock-items">

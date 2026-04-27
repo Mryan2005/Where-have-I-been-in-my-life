@@ -6,6 +6,7 @@ import { Subscription } from 'rxjs';
 import { LocationService } from './services/location.service';
 import { TravelLocation } from './models/location.model';
 import { MapComponent } from './components/map/map.component';
+import { ABOUT_CONTENT } from './data/about.data';
 
 type Lang = 'zh' | 'en';
 
@@ -41,6 +42,7 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     locations: '地点列表',
     settingsTitle: '偏好设置',
     calendarTitle: '旅行日历',
+    about: '关于',
   },
   en: {
     appName: 'Where I\'ve Been',
@@ -59,6 +61,7 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     locations: 'Locations',
     settingsTitle: 'Preferences',
     calendarTitle: 'Travel Calendar',
+    about: 'About',
   },
 };
 
@@ -79,6 +82,17 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   showListPanel = false;
   showSettingsPanel = false;
   showCalendarPanel = false;
+
+  // ── About window ───────────────────────────────────────────────────────────
+  showAboutPanel = false;
+  aboutWindowX = 200;
+  aboutWindowY = 80;
+  private aboutWinDragging = false;
+  private aboutWinOffsetX = 0;
+  private aboutWinOffsetY = 0;
+
+  // ── Minimized dock visibility ──────────────────────────────────────────────
+  showMinimizedDock = true;
 
   // ── List window drag ───────────────────────────────────────────────────────
   listWindowX = 80;
@@ -113,6 +127,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   currentLang: Lang = 'zh';
   isDarkMode = true;
 
+  readonly aboutContent = ABOUT_CONTENT;
+
   private sub!: Subscription;
 
   constructor(private locationService: LocationService) {
@@ -128,7 +144,18 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.applyTheme();
   }
 
-  ngAfterViewInit(): void { /* mapComp available */ }
+  ngAfterViewInit(): void {
+    // Auto-request geolocation on first visit
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          this.mapComp?.setUserLocation(pos.coords.longitude, pos.coords.latitude);
+        },
+        () => { /* permission denied or unavailable */ },
+        { enableHighAccuracy: true, timeout: 8000 }
+      );
+    }
+  }
 
   ngOnDestroy(): void { this.sub?.unsubscribe(); }
 
@@ -228,11 +255,10 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onCalendarDayClicked(day: CalendarDay): void {
     if (!day.locations.length) return;
-    // Open detail windows for all locations that day
-    day.locations.forEach(loc => this.onLocationSelected(loc));
-    // Fly map to the first location
+    // Only fly to the first location — do NOT open detail windows
     const first = day.locations[0];
     this.mapComp?.flyTo(first.longitude, first.latitude);
+    this.closeAllPanels();
   }
 
   // ── Filtered locations for list panel ─────────────────────────────────────
@@ -283,6 +309,12 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.mapComp?.flyTo(loc.longitude, loc.latitude);
   }
 
+  /** Jump to location on map without opening the detail window */
+  jumpToLocation(loc: TravelLocation): void {
+    this.closeAllPanels();
+    this.mapComp?.flyTo(loc.longitude, loc.latitude);
+  }
+
   // ── Topbar panel toggles ───────────────────────────────────────────────────
   toggleListPanel(): void {
     this.showListPanel = !this.showListPanel;
@@ -303,6 +335,29 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.showListPanel = false;
     this.showSettingsPanel = false;
     this.showCalendarPanel = false;
+    this.showAboutPanel = false;
+  }
+
+  // ── About window ───────────────────────────────────────────────────────────
+  toggleAbout(): void {
+    this.showAboutPanel = !this.showAboutPanel;
+    if (this.showAboutPanel) {
+      this.showListPanel = false;
+      this.showSettingsPanel = false;
+      this.showCalendarPanel = false;
+    }
+  }
+
+  onAboutTitleBarMouseDown(e: MouseEvent): void {
+    this.aboutWinDragging = true;
+    this.aboutWinOffsetX = e.clientX - this.aboutWindowX;
+    this.aboutWinOffsetY = e.clientY - this.aboutWindowY;
+    e.preventDefault();
+  }
+
+  // ── Dock toggle ────────────────────────────────────────────────────────────
+  toggleDock(): void {
+    this.showMinimizedDock = !this.showMinimizedDock;
   }
 
   // ── Window drag handlers ───────────────────────────────────────────────────
@@ -341,6 +396,10 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       this.calendarWindowX = e.clientX - this.calWinOffsetX;
       this.calendarWindowY = e.clientY - this.calWinOffsetY;
     }
+    if (this.aboutWinDragging) {
+      this.aboutWindowX = e.clientX - this.aboutWinOffsetX;
+      this.aboutWindowY = e.clientY - this.aboutWinOffsetY;
+    }
   }
 
   @HostListener('document:mouseup')
@@ -348,6 +407,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.listWinDragging = false;
     this.settingsWinDragging = false;
     this.calWinDragging = false;
+    this.aboutWinDragging = false;
   }
 
   // ── i18n & theme ──────────────────────────────────────────────────────────
