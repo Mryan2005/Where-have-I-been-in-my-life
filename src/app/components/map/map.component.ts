@@ -118,7 +118,7 @@ export class MapComponent implements OnInit, OnDestroy {
   setTerrain(enabled: boolean): void {
     if (!this.map) return;
     this.zone.runOutsideAngular(() => {
-      this.map.setTerrain(enabled ? { source: 'terrain', exaggeration: 1.8 } : null as any);
+      this.map.setTerrain(enabled ? { source: 'terrain', exaggeration: 1.8 } : null);
     });
   }
 
