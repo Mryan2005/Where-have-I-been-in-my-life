@@ -259,6 +259,7 @@
 
 // ── Window title bar ───────────────────────────────────────────────────────────
 .app-win-titlebar {
+  position: relative;
   display: flex;
   align-items: center;
   height: 36px;
@@ -277,8 +278,8 @@
 }
 
 .app-tl {
-  width: 13px;
-  height: 13px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   border: none;
   cursor: pointer;
@@ -290,7 +291,7 @@
   flex-shrink: 0;
 
   .app-tl-icon {
-    font-size: 8px;
+    font-size: 9px;
     opacity: 0;
     line-height: 1;
     color: rgba(0, 0, 0, 0.7);
@@ -309,7 +310,10 @@
 }
 
 .app-win-title {
-  flex: 1;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100% - 120px);
   text-align: center;
   font-size: 13px;
   font-weight: 600;
@@ -318,6 +322,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  pointer-events: none;
 }
 
 // ── Window body ────────────────────────────────────────────────────────────────
@@ -434,9 +439,49 @@
   font-size: 12px;
   font-family: inherit;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background 0.15s, border-color 0.15s;
 
   &:hover { background: var(--win-hover); }
+
+  &.settings-btn-toggle.active {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+}
+
+.settings-section-label {
+  padding: 6px 16px 2px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--tb-text-muted);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+// ── Window-menu open-window rows ───────────────────────────────────────────────
+.dropdown-window {
+  min-width: 220px;
+  padding: 6px 0;
+}
+
+.win-list-row {
+  cursor: pointer;
+  gap: 8px;
+  &:hover { background: var(--win-hover); }
+}
+
+.win-list-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.win-state-badge {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--tb-text-muted);
+  line-height: 1;
 }
 
 // ── Minimized windows dock ────────────────────────────────────────────────────

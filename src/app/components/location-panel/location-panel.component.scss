@@ -31,6 +31,7 @@
 
 // ── Title bar ──────────────────────────────────────────────────────────────────
 .title-bar {
+  position: relative;
   display: flex;
   align-items: center;
   height: 36px;
@@ -79,7 +80,10 @@
 }
 
 .window-title {
-  flex: 1;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100% - 120px);
   text-align: center;
   font-size: 13px;
   font-weight: 600;
@@ -88,6 +92,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  pointer-events: none;
 }
 
 // ── Body ───────────────────────────────────────────────────────────────────────

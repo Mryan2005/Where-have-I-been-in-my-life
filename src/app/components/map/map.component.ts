@@ -41,7 +41,7 @@ export class MapComponent implements OnInit, OnDestroy {
 
       this.map.addControl(new maplibregl.NavigationControl(), 'top-right');
       this.map.addControl(new maplibregl.ScaleControl(), 'bottom-left');
-      this.map.addControl(new maplibregl.FullscreenControl(), 'top-right');
+      // FullscreenControl removed — fullscreen is toggled from the Window menu in the topbar
 
       const geoControl = new maplibregl.GeolocateControl({
         positionOptions: { enableHighAccuracy: true },
@@ -101,6 +101,32 @@ export class MapComponent implements OnInit, OnDestroy {
     if (!this.map) return;
     this.zone.runOutsideAngular(() => {
       this.map.flyTo({ center: [lng, lat], zoom, duration: 1400, essential: true });
+    });
+  }
+
+  /** Toggle visibility of all marker labels. */
+  setShowLabels(show: boolean): void {
+    this.zone.runOutsideAngular(() => {
+      this.markers.forEach(marker => {
+        const label = marker.getElement().querySelector('.marker-label') as HTMLElement | null;
+        if (label) label.style.display = show ? '' : 'none';
+      });
+    });
+  }
+
+  /** Enable or disable 3D terrain. */
+  setTerrain(enabled: boolean): void {
+    if (!this.map) return;
+    this.zone.runOutsideAngular(() => {
+      this.map.setTerrain(enabled ? { source: 'terrain', exaggeration: 1.8 } : null as any);
+    });
+  }
+
+  /** Enable or disable the sky / atmosphere layer. */
+  setAtmosphere(enabled: boolean): void {
+    if (!this.map) return;
+    this.zone.runOutsideAngular(() => {
+      this.map.setSky({ 'atmosphere-blend': enabled ? 0.5 : 0 });
     });
   }
 

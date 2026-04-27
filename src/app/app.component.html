@@ -89,6 +89,52 @@
               {{ isDarkMode ? t('light') : t('dark') }}
             </button>
           </div>
+          <div class="settings-divider"></div>
+          <div class="settings-section-label">{{ t('mapSettings') }}</div>
+          <div class="settings-row">
+            <span class="settings-label">{{ t('terrain') }}</span>
+            <button class="settings-btn settings-btn-toggle" [class.active]="showTerrain" (click)="toggleTerrain()">
+              {{ showTerrain ? t('on') : t('off') }}
+            </button>
+          </div>
+          <div class="settings-row">
+            <span class="settings-label">{{ t('atmosphere') }}</span>
+            <button class="settings-btn settings-btn-toggle" [class.active]="showAtmosphere" (click)="toggleAtmosphere()">
+              {{ showAtmosphere ? t('on') : t('off') }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Window dropdown -->
+      <div class="menu-item" [class.active]="showWindowPanel">
+        <button class="menu-btn" (click)="toggleWindowPanel()">{{ t('window') }}</button>
+        <div class="dropdown dropdown-window" *ngIf="showWindowPanel" (click)="$event.stopPropagation()">
+          <div class="settings-row">
+            <span class="settings-label">{{ showMarkerLabels ? t('hideLabels') : t('showLabels') }}</span>
+            <button class="settings-btn settings-btn-toggle" [class.active]="showMarkerLabels" (click)="toggleMarkerLabels()">
+              {{ showMarkerLabels ? t('on') : t('off') }}
+            </button>
+          </div>
+          <div class="settings-row">
+            <span class="settings-label">{{ isFullscreen ? t('exitFullscreen') : t('fullscreen') }}</span>
+            <button class="settings-btn" (click)="toggleFullscreen()">
+              {{ isFullscreen ? '⤡' : '⤢' }}
+            </button>
+          </div>
+          <ng-container *ngIf="openWindows.length > 0">
+            <div class="settings-divider"></div>
+            <div
+              *ngFor="let win of openWindows"
+              class="settings-row win-list-row"
+              (click)="bringWindowToFront(win)"
+            >
+              <span class="loc-dot" [style.background]="win.markerColor || '#E74C3C'"></span>
+              <span class="settings-label win-list-name">{{ win.name }}</span>
+              <span class="win-state-badge" *ngIf="minimizedWindowIds.has(win.id)">−</span>
+            </div>
+          </ng-container>
+          <div *ngIf="openWindows.length === 0" class="no-results">{{ t('noOpenWindows') }}</div>
         </div>
       </div>
     </div>
@@ -109,7 +155,7 @@
   </nav>
 
   <!-- Backdrop to close panel dropdowns -->
-  <div class="panel-backdrop" *ngIf="showListPanel || showSettingsPanel || showCalendarPanel || showAboutPanel" (click)="closeAllPanels()"></div>
+  <div class="panel-backdrop" *ngIf="showListPanel || showSettingsPanel || showCalendarPanel || showAboutPanel || showWindowPanel" (click)="closeAllPanels()"></div>
 
   <!-- ── Full-screen 3D Map ──────────────────────────────────────────── -->
   <div class="map-wrapper">

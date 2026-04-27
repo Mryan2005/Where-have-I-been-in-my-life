@@ -30,6 +30,7 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     list: '列表',
     calendar: '日历',
     settings: '设置',
+    window: '窗口',
     search: '搜索地点…',
     language: '语言',
     theme: '主题',
@@ -43,12 +44,23 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     settingsTitle: '偏好设置',
     calendarTitle: '旅行日历',
     about: '关于',
+    showLabels: '显示锚点名称',
+    hideLabels: '隐藏锚点名称',
+    fullscreen: '全屏',
+    exitFullscreen: '退出全屏',
+    terrain: '3D 地形',
+    atmosphere: '大气效果',
+    on: '开启',
+    off: '关闭',
+    mapSettings: '地图设置',
+    noOpenWindows: '没有打开的窗口',
   },
   en: {
     appName: 'Where I\'ve Been',
     list: 'List',
     calendar: 'Calendar',
     settings: 'Settings',
+    window: 'Window',
     search: 'Search locations…',
     language: 'Language',
     theme: 'Theme',
@@ -62,6 +74,16 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     settingsTitle: 'Preferences',
     calendarTitle: 'Travel Calendar',
     about: 'About',
+    showLabels: 'Show Marker Labels',
+    hideLabels: 'Hide Marker Labels',
+    fullscreen: 'Fullscreen',
+    exitFullscreen: 'Exit Fullscreen',
+    terrain: '3D Terrain',
+    atmosphere: 'Atmosphere',
+    on: 'On',
+    off: 'Off',
+    mapSettings: 'Map Settings',
+    noOpenWindows: 'No open windows',
   },
 };
 
@@ -82,6 +104,13 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   showListPanel = false;
   showSettingsPanel = false;
   showCalendarPanel = false;
+  showWindowPanel = false;
+
+  // ── Map feature toggles ────────────────────────────────────────────────────
+  showMarkerLabels = true;
+  isFullscreen = false;
+  showTerrain = true;
+  showAtmosphere = true;
 
   // ── About window ───────────────────────────────────────────────────────────
   showAboutPanel = false;
@@ -132,6 +161,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   private sub!: Subscription;
   private colorSchemeQuery!: MediaQueryList;
   private colorSchemeListener!: (e: MediaQueryListEvent) => void;
+  private fullscreenListener!: () => void;
 
   constructor(private locationService: LocationService, private zone: NgZone) {
     const now = new Date();
@@ -165,6 +195,14 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       };
       this.colorSchemeQuery.addEventListener('change', this.colorSchemeListener);
     }
+
+    // Track browser fullscreen state
+    this.fullscreenListener = () => {
+      this.zone.run(() => {
+        this.isFullscreen = !!document.fullscreenElement;
+      });
+    };
+    document.addEventListener('fullscreenchange', this.fullscreenListener);
   }
 
   ngAfterViewInit(): void {
@@ -185,6 +223,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.colorSchemeQuery && this.colorSchemeListener) {
       this.colorSchemeQuery.removeEventListener('change', this.colorSchemeListener);
     }
+    document.removeEventListener('fullscreenchange', this.fullscreenListener);
   }
 
   // ── Translation helper ─────────────────────────────────────────────────────
@@ -312,6 +351,11 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!existing) {
       this.openWindows = [...this.openWindows, loc];
     }
+    // Auto-minimize all other visible windows when a new location is selected
+    this.openWindows
+      .filter(w => w.id !== loc.id && !this.minimizedWindowIds.has(w.id))
+      .forEach(w => this.minimizedWindowIds.add(w.id));
+    this.minimizedWindowIds = new Set(this.minimizedWindowIds);
     this.minimizedWindowIds.delete(loc.id);
     this.showListPanel = false;
     this.showCalendarPanel = false;
@@ -346,17 +390,22 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   // ── Topbar panel toggles ───────────────────────────────────────────────────
   toggleListPanel(): void {
     this.showListPanel = !this.showListPanel;
-    if (this.showListPanel) { this.showSettingsPanel = false; this.showCalendarPanel = false; }
+    if (this.showListPanel) { this.showSettingsPanel = false; this.showCalendarPanel = false; this.showWindowPanel = false; }
   }
 
   toggleCalendarPanel(): void {
     this.showCalendarPanel = !this.showCalendarPanel;
-    if (this.showCalendarPanel) { this.showListPanel = false; this.showSettingsPanel = false; }
+    if (this.showCalendarPanel) { this.showListPanel = false; this.showSettingsPanel = false; this.showWindowPanel = false; }
   }
 
   toggleSettingsPanel(): void {
     this.showSettingsPanel = !this.showSettingsPanel;
-    if (this.showSettingsPanel) { this.showListPanel = false; this.showCalendarPanel = false; }
+    if (this.showSettingsPanel) { this.showListPanel = false; this.showCalendarPanel = false; this.showWindowPanel = false; }
+  }
+
+  toggleWindowPanel(): void {
+    this.showWindowPanel = !this.showWindowPanel;
+    if (this.showWindowPanel) { this.showListPanel = false; this.showSettingsPanel = false; this.showCalendarPanel = false; }
   }
 
   closeAllPanels(): void {
@@ -364,6 +413,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.showSettingsPanel = false;
     this.showCalendarPanel = false;
     this.showAboutPanel = false;
+    this.showWindowPanel = false;
   }
 
   // ── About window ───────────────────────────────────────────────────────────
@@ -381,6 +431,38 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.aboutWinOffsetX = e.clientX - this.aboutWindowX;
     this.aboutWinOffsetY = e.clientY - this.aboutWindowY;
     e.preventDefault();
+  }
+
+  // ── Marker label toggle ────────────────────────────────────────────────────
+  toggleMarkerLabels(): void {
+    this.showMarkerLabels = !this.showMarkerLabels;
+    this.mapComp?.setShowLabels(this.showMarkerLabels);
+  }
+
+  // ── Fullscreen toggle ──────────────────────────────────────────────────────
+  toggleFullscreen(): void {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {/* ignore */});
+    } else {
+      document.exitFullscreen().catch(() => {/* ignore */});
+    }
+  }
+
+  // ── Map terrain / atmosphere toggles ──────────────────────────────────────
+  toggleTerrain(): void {
+    this.showTerrain = !this.showTerrain;
+    this.mapComp?.setTerrain(this.showTerrain);
+  }
+
+  toggleAtmosphere(): void {
+    this.showAtmosphere = !this.showAtmosphere;
+    this.mapComp?.setAtmosphere(this.showAtmosphere);
+  }
+
+  // ── Bring a window to front from the Window menu ──────────────────────────
+  bringWindowToFront(loc: TravelLocation): void {
+    this.restoreWindow(loc);
+    this.mapComp?.flyTo(loc.longitude, loc.latitude);
   }
 
   // ── Dock toggle ────────────────────────────────────────────────────────────
