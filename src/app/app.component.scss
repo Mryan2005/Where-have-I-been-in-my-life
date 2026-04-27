@@ -121,6 +121,12 @@
   align-items: center;
   gap: 6px;
   margin-right: 12px;
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 2px 6px;
+  transition: background 0.12s;
+
+  &:hover { background: var(--tb-active); }
 
   .brand-icon { font-size: 16px; }
   .brand-name {
@@ -518,4 +524,248 @@
   flex-shrink: 0;
 
   &:hover { color: #FF5F57; }
+}
+
+// ── Topbar Dropdown Menus ──────────────────────────────────────────────────────
+.dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 260px;
+  background: var(--win-bg);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--win-border);
+  border-radius: 10px;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.18),
+    0 12px 40px rgba(0, 0, 0, 0.45),
+    0 4px 12px rgba(0, 0, 0, 0.25);
+  z-index: 700;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+  color: var(--tb-text);
+  animation: dropdown-in 0.14s cubic-bezier(0.34, 1.4, 0.64, 1);
+
+  @keyframes dropdown-in {
+    from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .dropdown-search {
+    padding: 8px 10px 6px;
+    border-bottom: 1px solid var(--win-titlebar-border);
+  }
+}
+
+.dropdown-calendar {
+  min-width: 280px;
+  padding: 8px;
+}
+
+.dropdown-settings {
+  min-width: 220px;
+  padding: 6px 0;
+}
+
+// ── Calendar Styles ────────────────────────────────────────────────────────────
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 2px 8px;
+  gap: 4px;
+}
+
+.cal-header-center {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  justify-content: center;
+}
+
+.cal-month-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tb-text);
+  white-space: nowrap;
+}
+
+.cal-nav-btn {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--tb-text);
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s;
+
+  &:hover { background: var(--win-hover); }
+}
+
+.cal-today-btn {
+  background: transparent;
+  border: none;
+  color: var(--accent);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 5px;
+  font-family: inherit;
+  transition: background 0.12s;
+
+  &:hover { background: var(--input-bg); }
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.cal-day-name {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--tb-text-muted);
+  padding: 4px 0;
+  letter-spacing: 0.3px;
+}
+
+.cal-day {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.1s;
+  background: #fff;
+
+  // Dark mode base: slightly transparent white
+  .app-shell:not(.light-mode) & {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  &:hover {
+    background: var(--win-hover);
+    .app-shell.light-mode & { background: rgba(0, 0, 0, 0.06); }
+  }
+
+  &.other-month {
+    opacity: 0.35;
+  }
+
+  &.today {
+    border: 1.5px solid var(--accent);
+  }
+
+  // Days with visit data — light blue
+  &.has-visit {
+    background: rgba(147, 197, 253, 0.55); // light blue
+    .app-shell.light-mode & {
+      background: rgba(147, 197, 253, 0.7);
+    }
+    &:hover {
+      background: rgba(147, 197, 253, 0.75);
+    }
+  }
+}
+
+.cal-day-num {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--tb-text);
+  line-height: 1;
+}
+
+.cal-dots {
+  display: flex;
+  gap: 2px;
+  margin-top: 2px;
+}
+
+.cal-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+}
+
+// ── About macOS Window ─────────────────────────────────────────────────────────
+.about-window {
+  width: 300px;
+}
+
+.about-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 20px 24px;
+  gap: 6px;
+  cursor: default;
+  user-select: text;
+}
+
+.about-app-icon {
+  font-size: 52px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.about-app-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--tb-text);
+  letter-spacing: 0.2px;
+}
+
+.about-version {
+  font-size: 12px;
+  color: var(--tb-text-muted);
+}
+
+.about-description {
+  font-size: 12px;
+  color: var(--tb-text-muted);
+  text-align: center;
+  white-space: pre-line;
+  line-height: 1.6;
+  margin: 4px 0;
+}
+
+.about-divider {
+  width: 100%;
+  height: 1px;
+  background: var(--settings-divider);
+  margin: 8px 0 4px;
+}
+
+.about-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 3px 0;
+}
+
+.about-label {
+  font-size: 12px;
+  color: var(--tb-text-muted);
+  font-weight: 600;
+}
+
+.about-value {
+  font-size: 12px;
+  color: var(--tb-text);
+  text-align: right;
+  flex: 1;
+  margin-left: 12px;
 }
