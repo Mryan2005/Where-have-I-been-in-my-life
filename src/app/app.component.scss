@@ -211,10 +211,13 @@
 }
 
 // ── Panel backdrop ─────────────────────────────────────────────────────────────
+// z-index must be BELOW the topbar (600) so dropdown clicks are not intercepted,
+// but still above the map area (which has no z-index) so backdrop closes panels
+// when the user clicks anywhere on the map.
 .panel-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 650;
+  z-index: 590;
 }
 
 // ── Map area ───────────────────────────────────────────────────────────────────
