@@ -37,38 +37,93 @@
       <div class="menu-item" [class.active]="showCalendarPanel">
         <button class="menu-btn" (click)="toggleCalendarPanel()">{{ t('calendar') }}</button>
         <div class="dropdown dropdown-calendar" *ngIf="showCalendarPanel" (click)="$event.stopPropagation()">
-          <!-- Month navigation -->
-          <div class="cal-header">
-            <button class="cal-nav-btn" (click)="prevCalendarMonth()">‹</button>
-            <div class="cal-header-center">
-              <span class="cal-month-label">{{ calendarMonthLabel }}</span>
-              <button class="cal-today-btn" (click)="goToToday()">{{ currentLang === 'zh' ? '今天' : 'Today' }}</button>
-            </div>
-            <button class="cal-nav-btn" (click)="nextCalendarMonth()">›</button>
-          </div>
-          <!-- Day-of-week header row -->
-          <div class="cal-grid">
-            <div class="cal-day-name" *ngFor="let name of calendarDayNames">{{ name }}</div>
-            <!-- Calendar day cells -->
-            <div
-              *ngFor="let day of calendarDays"
-              class="cal-day"
-              [class.other-month]="!day.isCurrentMonth"
-              [class.today]="day.isToday"
-              [class.has-visit]="day.locations.length > 0"
-              (click)="onCalendarDayClicked(day)"
-              [title]="day.locations.length > 0 ? day.locations[0].name + (day.locations.length > 1 ? (' +' + (day.locations.length - 1)) : '') : ''"
-            >
-              <span class="cal-day-num">{{ day.dayNum }}</span>
-              <div class="cal-dots" *ngIf="day.locations.length > 0">
-                <span
-                  *ngFor="let loc of day.locations.slice(0, 3)"
-                  class="cal-dot"
-                  [style.background]="loc.markerColor || '#E74C3C'"
-                ></span>
+
+          <!-- ── Year/month picker mode ───────────────────────────────── -->
+          <ng-container *ngIf="calPickerMode">
+            <div class="cal-picker-wrap">
+              <!-- Year row with prev/next -->
+              <div class="cal-picker-year-row">
+                <button class="cal-nav-btn" (click)="calPickerYear = calPickerYear - 9">‹</button>
+                <span class="cal-picker-year-label">{{ calPickerYear - 4 }} – {{ calPickerYear + 4 }}</span>
+                <button class="cal-nav-btn" (click)="calPickerYear = calPickerYear + 9">›</button>
+              </div>
+              <!-- Year grid -->
+              <div class="cal-picker-year-grid">
+                <button
+                  *ngFor="let y of calPickerYears"
+                  class="cal-picker-year-btn"
+                  [class.selected]="y === calendarYear"
+                  (click)="calPickerYear = y"
+                >{{ y }}</button>
+              </div>
+              <!-- Month grid -->
+              <div class="cal-picker-month-grid">
+                <button
+                  *ngFor="let mName of calPickerMonthNames; let mi = index"
+                  class="cal-picker-month-btn"
+                  [class.selected]="mi === calendarMonth && calPickerYear === calendarYear"
+                  (click)="selectYearMonth(calPickerYear, mi)"
+                >{{ mName }}</button>
               </div>
             </div>
-          </div>
+          </ng-container>
+
+          <!-- ── Normal calendar view ─────────────────────────────────── -->
+          <ng-container *ngIf="!calPickerMode">
+            <!-- Month navigation -->
+            <div class="cal-header">
+              <button class="cal-nav-btn" (click)="prevCalendarMonth()">‹</button>
+              <div class="cal-header-center">
+                <span class="cal-month-label cal-month-label-btn" (click)="toggleCalPicker()">
+                  {{ calendarMonthLabel }} ▾
+                </span>
+                <button class="cal-today-btn" (click)="goToToday()">{{ currentLang === 'zh' ? '今天' : 'Today' }}</button>
+              </div>
+              <button class="cal-nav-btn" (click)="nextCalendarMonth()">›</button>
+            </div>
+            <!-- Day-of-week header row -->
+            <div class="cal-grid">
+              <div class="cal-day-name" *ngFor="let name of calendarDayNames">{{ name }}</div>
+              <!-- Calendar day cells -->
+              <div
+                *ngFor="let day of calendarDays"
+                class="cal-day"
+                [class.other-month]="!day.isCurrentMonth"
+                [class.today]="day.isToday"
+                [class.has-visit]="day.locations.length > 0"
+                [class.selected-day]="calDayDate === toDateStr(day.date) && day.locations.length > 0"
+                (click)="onCalendarDayClicked(day)"
+                [title]="day.locations.length > 0 ? day.locations[0].name + (day.locations.length > 1 ? (' +' + (day.locations.length - 1)) : '') : ''"
+              >
+                <span class="cal-day-num">{{ day.dayNum }}</span>
+                <div class="cal-dots" *ngIf="day.locations.length > 0">
+                  <span
+                    *ngFor="let loc of day.locations.slice(0, 3)"
+                    class="cal-dot"
+                    [style.background]="loc.markerColor || '#E74C3C'"
+                  ></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Day locations popup ──────────────────────────────── -->
+            <div class="cal-day-locs" *ngIf="calDayLocations.length > 0">
+              <div class="cal-day-locs-header">
+                <span class="cal-day-locs-date">{{ calDayDate }}</span>
+                <button class="cal-day-locs-close" (click)="calDayLocations = []; calDayDate = ''">✕</button>
+              </div>
+              <div
+                *ngFor="let loc of calDayLocations"
+                class="cal-day-loc-item"
+                (click)="flyToCalLoc(loc)"
+              >
+                <span class="loc-dot" [style.background]="loc.markerColor || '#E74C3C'"></span>
+                <span class="cal-day-loc-name">{{ loc.name }}</span>
+                <span class="cal-day-loc-arrow">→</span>
+              </div>
+            </div>
+          </ng-container>
+
         </div>
       </div>
 
@@ -166,8 +221,10 @@
   <ng-container *ngFor="let loc of visibleWindows">
     <app-location-panel
       [location]="loc"
+      [zIndex]="getWindowZIndex(loc)"
       (closed)="onWindowClosed(loc)"
       (minimizeToggled)="onMinimizeToggled(loc)"
+      (focused)="onWindowFocused(loc)"
     ></app-location-panel>
   </ng-container>
 

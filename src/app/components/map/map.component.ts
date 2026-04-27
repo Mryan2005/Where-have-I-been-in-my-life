@@ -21,6 +21,7 @@ export class MapComponent implements OnInit, OnDestroy {
   private markers = new Map<string, maplibregl.Marker>();
   private userMarker: maplibregl.Marker | null = null;
   private sub!: Subscription;
+  private labelsVisible = true;
 
   constructor(
     private locationService: LocationService,
@@ -106,10 +107,15 @@ export class MapComponent implements OnInit, OnDestroy {
 
   /** Toggle visibility of all marker labels. */
   setShowLabels(show: boolean): void {
+    this.labelsVisible = show;
     this.zone.runOutsideAngular(() => {
       this.markers.forEach(marker => {
-        const label = marker.getElement().querySelector('.marker-label') as HTMLElement | null;
-        if (label) label.style.display = show ? '' : 'none';
+        const el = marker.getElement();
+        if (show) {
+          el.classList.remove('no-label');
+        } else {
+          el.classList.add('no-label');
+        }
       });
     });
   }
@@ -168,6 +174,9 @@ export class MapComponent implements OnInit, OnDestroy {
   private createMarkerEl(loc: TravelLocation): HTMLElement {
     const el = document.createElement('div');
     el.className = 'custom-marker';
+    if (!this.labelsVisible) {
+      el.classList.add('no-label');
+    }
     el.style.setProperty('--color', loc.markerColor ?? '#E74C3C');
     el.innerHTML = `
       <div class="marker-pin"></div>

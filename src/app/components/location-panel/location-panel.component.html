@@ -5,6 +5,8 @@
   [style.top.px]="windowY"
   [style.width.px]="windowWidth"
   [style.height.px]="windowHeight"
+  [style.z-index]="zIndex"
+  (mousedown)="onWindowMouseDown()"
 >
   <!-- Title Bar -->
   <div class="title-bar" (mousedown)="onTitleBarMouseDown($event)" (touchstart)="onTitleBarTouchStart($event)">

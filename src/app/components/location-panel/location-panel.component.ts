@@ -16,8 +16,10 @@ import { TravelLocation } from '../../models/location.model';
 })
 export class LocationPanelComponent implements OnInit, OnChanges {
   @Input() location!: TravelLocation;
+  @Input() zIndex = 1000;
   @Output() closed = new EventEmitter<void>();
   @Output() minimizeToggled = new EventEmitter<void>();
+  @Output() focused = new EventEmitter<void>();
 
   renderedContent = '';
   isMaximized = false;
@@ -73,11 +75,16 @@ export class LocationPanelComponent implements OnInit, OnChanges {
 
   // ── Title-bar drag (mouse) ─────────────────────────────────────────────────
   onTitleBarMouseDown(event: MouseEvent): void {
+    this.focused.emit();
     if (this.isMaximized) return;
     this.dragging = true;
     this.dragOffsetX = event.clientX - this.windowX;
     this.dragOffsetY = event.clientY - this.windowY;
     event.preventDefault();
+  }
+
+  onWindowMouseDown(): void {
+    this.focused.emit();
   }
 
   // ── Title-bar drag (touch) ─────────────────────────────────────────────────
