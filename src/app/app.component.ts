@@ -1,6 +1,6 @@
 import {
   Component, OnInit, OnDestroy, ViewChild,
-  HostListener, AfterViewInit
+  HostListener, AfterViewInit, NgZone
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { LocationService } from './services/location.service';
@@ -130,11 +130,23 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly aboutContent = ABOUT_CONTENT;
 
   private sub!: Subscription;
+  private colorSchemeQuery!: MediaQueryList;
+  private colorSchemeListener!: (e: MediaQueryListEvent) => void;
 
-  constructor(private locationService: LocationService) {
+  constructor(private locationService: LocationService, private zone: NgZone) {
     const now = new Date();
     this.calendarYear = now.getFullYear();
     this.calendarMonth = now.getMonth();
+
+    // ── Auto-detect system language ────────────────────────────────────────
+    const lang = navigator.language ?? navigator.languages?.[0] ?? '';
+    this.currentLang = lang.toLowerCase().startsWith('zh') ? 'zh' : 'en';
+
+    // ── Auto-detect system color scheme ───────────────────────────────────
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      this.colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      this.isDarkMode = this.colorSchemeQuery.matches;
+    }
   }
 
   ngOnInit(): void {
@@ -142,6 +154,17 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       this.allLocations = locs;
     });
     this.applyTheme();
+
+    // Listen for OS color scheme changes
+    if (this.colorSchemeQuery) {
+      this.colorSchemeListener = (e: MediaQueryListEvent) => {
+        this.zone.run(() => {
+          this.isDarkMode = e.matches;
+          this.applyTheme();
+        });
+      };
+      this.colorSchemeQuery.addEventListener('change', this.colorSchemeListener);
+    }
   }
 
   ngAfterViewInit(): void {
@@ -157,7 +180,12 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  ngOnDestroy(): void { this.sub?.unsubscribe(); }
+  ngOnDestroy(): void {
+    this.sub?.unsubscribe();
+    if (this.colorSchemeQuery && this.colorSchemeListener) {
+      this.colorSchemeQuery.removeEventListener('change', this.colorSchemeListener);
+    }
+  }
 
   // ── Translation helper ─────────────────────────────────────────────────────
   t(key: string): string {
@@ -418,7 +446,19 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   toggleTheme(): void {
     this.isDarkMode = !this.isDarkMode;
     this.applyTheme();
+    // Stop following system preference after manual override
+    if (this.colorSchemeQuery && this.colorSchemeListener) {
+      this.colorSchemeQuery.removeEventListener('change', this.colorSchemeListener);
+    }
   }
+
+  // ── Mobile detection ───────────────────────────────────────────────────────
+  get isMobile(): boolean {
+    return typeof window !== 'undefined' && window.innerWidth < 768;
+  }
+
+  @HostListener('window:resize')
+  onWindowResize(): void { /* triggers change detection on resize */ }
 
   private applyTheme(): void {
     if (this.isDarkMode) {

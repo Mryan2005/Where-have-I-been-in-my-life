@@ -7,7 +7,7 @@
   [style.height.px]="windowHeight"
 >
   <!-- Title Bar -->
-  <div class="title-bar" (mousedown)="onTitleBarMouseDown($event)">
+  <div class="title-bar" (mousedown)="onTitleBarMouseDown($event)" (touchstart)="onTitleBarTouchStart($event)">
     <div class="traffic-lights">
       <button class="tl tl-close"    title="关闭"   (click)="close(); $event.stopPropagation()">
         <span class="tl-icon">✕</span>
