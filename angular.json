@@ -38,6 +38,7 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
+              "src/assets/_headers",
               "src/_headers"
             ],
             "styles": [
@@ -98,7 +99,9 @@
             "inlineStyleLanguage": "scss",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              "src/assets/_headers",
+              "src/_headers"
             ],
             "styles": [
               "src/styles.scss"
