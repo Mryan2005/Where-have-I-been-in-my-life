@@ -455,9 +455,9 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
   },
   {
     id: '46',
-    name: '清晖园',
-    latitude: 39.030285,
-    longitude: 115.960078,
+    name: '顺德清晖园',
+    latitude: 22.838387,
+    longitude: 113.249829,
     firstVisitDate: '2026-02-27',
     markerColor: '#6315a7',
     images: [],
