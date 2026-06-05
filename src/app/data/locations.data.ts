@@ -23,9 +23,9 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
   },
   {
     id: '3',
-    name: '什刹海公园',
-    latitude: 24.825314,
-    longitude: 118.533312,
+    name: '北京什刹海公园',
+    latitude: 39.940763,
+    longitude: 116.376555,
     firstVisitDate: '2019-08-05',
     markerColor: '#da2004',
     images: [],
