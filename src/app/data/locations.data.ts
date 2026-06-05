@@ -3,6 +3,86 @@ import { TravelLocation } from '../models/location.model';
 export const DEFAULT_LOCATIONS: TravelLocation[] = [
   {
     id: '1',
+    name: '天安门广场',
+    latitude: 39.902722,
+    longitude: 116.391441,
+    firstVisitDate: '2019-08-03',
+    markerColor: '#03d626',
+    images: [],
+    content: ``,
+  },
+  {
+    id: '2',
+    name: '景山公园',
+    latitude: 39.924459,
+    longitude: 116.390397,
+    firstVisitDate: '2019-08-04',
+    markerColor: '#cad5b3',
+    images: [],
+    content: ``,
+  },
+  {
+    id: '3',
+    name: '什刹海公园',
+    latitude: 24.825314,
+    longitude: 118.533312,
+    firstVisitDate: '2019-08-05',
+    markerColor: '#da2004',
+    images: [],
+    content: ``,
+  },
+  {
+    id: '4',
+    name: '天坛公园',
+    latitude: 39.879907,
+    longitude: 116.402872,
+    firstVisitDate: '2019-08-05',
+    markerColor: '#0e219c',
+    images: [],
+    content: ``,
+  },
+  {
+    id: '5',
+    name: '八达岭长城',
+    latitude: 40.360328,
+    longitude: 116.005051,
+    firstVisitDate: '2019-08-06',
+    markerColor: '#c6acdb',
+    images: [],
+    content: ``,
+  },
+  {
+    id: '6',
+    name: '圆明园',
+    latitude: 39.998295,
+    longitude: 116.303674,
+    firstVisitDate: '2019-08-07',
+    markerColor: '#eca585',
+    images: [],
+    content: ``,
+  },
+  {
+    id: '7',
+    name: '庆丰包子铺',
+    latitude: 39.899738,
+    longitude: 116.393995,
+    firstVisitDate: '2019-08-08',
+    markerColor: '#eca585',
+    images: [],
+    content: ``,
+  },
+  {
+    id: '8',
+    name: '清华大学',
+    latitude: 40.002291,
+    longitude: 116.320963,
+    firstVisitDate: '2019-08-08',
+    markerColor: '#7fe687',
+    images: [],
+    content: `约了北大和清华，可惜，北大拒绝了我`,
+  },
+  {
+    id: '9',
     name: '外滩',
     latitude: 31.235336,
     longitude: 121.487632,
@@ -12,7 +92,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     content: ``,
   },
   {
-    id: '2',
+    id: '10',
     name: '118广场·威尼斯小镇',
     latitude: 31.233173,
     longitude: 121.373097,
@@ -22,7 +102,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     content: ``,
   },
   {
-    id: '3',
+    id: '11',
     name: '中共一大',
     latitude: 31.222063,
     longitude: 121.470693,
@@ -32,7 +112,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     content: ``,
   },
   {
-    id: '4',
+    id: '12',
     name: '江浦公园',
     latitude: 31.267948,
     longitude: 121.519674,
@@ -42,7 +122,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     content: ``,
   },
   {
-    id: '5',
+    id: '13',
     name: '陆家嘴',
     latitude: 31.240168,
     longitude: 121.497945,
@@ -52,7 +132,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     content: ``,
   },
   {
-    id: '6',
+    id: '14',
     name: '上海苏河湾万象天地',
     latitude: 31.24437,
     longitude: 121.473874,
@@ -62,7 +142,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     content: ``,
   },
   {
-    id: '7',
+    id: '15',
     name: '醉白池',
     latitude: 31.003604,
     longitude: 121.226652,
@@ -72,7 +152,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     content: ``,
   },
   {
-    id: '8',
+    id: '16',
     name: '故宫',
     latitude: 39.917276,
     longitude: 116.390769,
@@ -82,7 +162,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     content: ``,
   },
   {
-    id: '9',
+    id: '17',
     name: '复兴公园',
     latitude: 31.218662,
     longitude: 121.464648,
@@ -92,7 +172,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     content: ``,
   },
   {
-    id: '10',
+    id: '18',
     name: '思南路',
     latitude: 31.215734,
     longitude: 121.463846,
@@ -102,7 +182,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     content: ``,
   },
   {
-    id: '11',
+    id: '19',
     name: '商城路',
     latitude: 31.23257,
     longitude: 121.512447,
@@ -112,7 +192,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     content: ``,
   },
   {
-    id: '12',
+    id: '20',
     name: '嘉松中路',
     latitude: 31.166054,
     longitude: 121.219694,
@@ -122,7 +202,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     content: ``,
   },
   {
-    id: '13',
+    id: '21',
     name: '朱家角古镇旅游区',
     latitude: 30.473934,
     longitude: 120.23665,
@@ -132,7 +212,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     content: ``,
   },
   {
-    id: '14',
+    id: '22',
     name: '南翔老街',
     latitude: 31.293691,
     longitude: 121.303876,
@@ -142,7 +222,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     content: ``,
   },
   {
-    id: '15',
+    id: '23',
     name: '中苏友好大厦旧址',
     latitude: 31.226104,
     longitude: 121.448049,
@@ -152,7 +232,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     content: ``,
   },
   {
-    id: '16',
+    id: '24',
     name: '石门一路',
     latitude: 31.227814,
     longitude: 121.458573,
@@ -162,7 +242,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     content: ``,
   },
   {
-    id: '17',
+    id: '25',
     name: '上海植物园',
     latitude: 31.149813,
     longitude: 121.440424,
@@ -172,7 +252,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     content: ``,
   },
   {
-    id: '18',
+    id: '26',
     name: '人民公园',
     latitude: 31.23401,
     longitude: 121.468802,
@@ -182,7 +262,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     content: ``,
   },
   {
-    id: '19',
+    id: '27',
     name: '上海基督教沐恩堂',
     latitude: 31.235197,
     longitude: 121.471338,
@@ -192,7 +272,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     content: ``,
   },
   {
-    id: '20',
+    id: '28',
     name: '上海市来福士广场',
     latitude: 31.2345,
     longitude: 121.472069,
@@ -202,7 +282,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     content: ``,
   },
   {
-    id: '21',
+    id: '29',
     name: '中共中央政治局机关旧址',
     latitude: 31.233548,
     longitude: 121.473235,
@@ -212,7 +292,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     content: ``,
   },
   {
-    id: '22',
+    id: '30',
     name: '和平影都(来福士广场店)',
     latitude: 31.241946,
     longitude: 121.49526,
@@ -222,7 +302,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     content: ``,
   },
   {
-    id: '23',
+    id: '31',
     name: '西藏中路',
     latitude: 31.238041,
     longitude: 121.469412,
@@ -232,7 +312,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     content: ``,
   },
   {
-    id: '24',
+    id: '32',
     name: '合川路',
     latitude: 31.168389,
     longitude: 121.380034,
@@ -242,7 +322,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     content: ``,
   },
   {
-    id: '25',
+    id: '33',
     name: '上海虹桥站',
     latitude: 31.196127,
     longitude: 121.316109,
@@ -252,7 +332,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     content: ``,
   },
   {
-    id: '26',
+    id: '34',
     name: '淞虹路',
     latitude: 31.219975,
     longitude: 121.355808,
@@ -262,7 +342,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     content: ``,
   },
   {
-    id: '27',
+    id: '35',
     name: '中共上海地下组织斗争史陈列馆-暨刘长胜故居',
     latitude: 31.226608,
     longitude: 121.441761,
@@ -272,7 +352,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     content: ``,
   },
   {
-    id: '28',
+    id: '36',
     name: '静安寺',
     latitude: 31.225215,
     longitude: 121.440792,
@@ -282,7 +362,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     content: ``,
   },
   {
-    id: '29',
+    id: '37',
     name: '世纪公园',
     latitude: 31.218799,
     longitude: 121.548627,
@@ -292,7 +372,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     content: ``,
   },
   {
-    id: '30',
+    id: '38',
     name: 'Apple(静安)',
     latitude: 31.224257,
     longitude: 121.441495,
@@ -302,7 +382,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     content: ``,
   },
   {
-    id: '31',
+    id: '39',
     name: '东方绿舟',
     latitude: 31.100504,
     longitude: 121.014895,
@@ -312,7 +392,7 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     content: ``,
   },
   {
-    id: '32',
+    id: '40',
     name: '上海东方明珠电视塔',
     latitude: 31.241946,
     longitude: 121.49526,
