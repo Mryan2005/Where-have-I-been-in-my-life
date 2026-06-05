@@ -409,7 +409,14 @@ export const DEFAULT_LOCATIONS: TravelLocation[] = [
     firstVisitDate: '2024-08-25',
     markerColor: '#a16e49',
     images: [],
-    content: `看到这个我突然间想玩一个离谱而又抽象的玩法，保持温迪原有的发型，将帽子变成塞西莉亚花，然后穿着红色的大囍的服饰，（双手搭在大腿肉上）。
+    content: `![psc.jpg](https://free.picui.cn/free/2026/06/06/6a22fc84c535e.jpg)
+
+看到这个我突然间想玩一个离谱而又抽象的玩法，保持温迪原有的发型，将帽子变成塞西莉亚花，然后穿着红色的大囍的服饰，（双手搭在大腿肉上）。
+
+![049daeef80fddd741cbf03bcbdbf47bd.jpg](https://free.picui.cn/free/2026/06/06/6a22fc8555cea.jpg)
+
+如上图所示
+
 
 至于为什么这会很抽象，因为温迪，好像没有恋人，并且温迪是男的，不过审美上倒是挺不错的。`,
   },
