@@ -7,13 +7,15 @@ import { AppComponent } from './app.component';
 import { MapComponent } from './components/map/map.component';
 import { LocationPanelComponent } from './components/location-panel/location-panel.component';
 import { AddLocationDialogComponent } from './components/add-location-dialog/add-location-dialog.component';
+import { ImageViewerComponent } from './components/image-viewer/image-viewer.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     MapComponent,
     LocationPanelComponent,
-    AddLocationDialogComponent
+    AddLocationDialogComponent,
+    ImageViewerComponent
   ],
   imports: [
     BrowserModule,

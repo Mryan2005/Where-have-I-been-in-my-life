@@ -21,23 +21,11 @@
         <span class="tl-icon">⤢</span>
       </button>
     </div>
-    <span class="window-title">{{ location.name }}</span>
+    <span class="window-title">{{ imageData.title }}</span>
   </div>
 
   <!-- Content -->
   <div class="window-body">
-
-    <!-- Image gallery -->
-    <div class="image-gallery" *ngIf="location?.images?.length">
-      <img
-        *ngFor="let img of location.images"
-        [src]="img"
-        alt="travel photo"
-        class="gallery-img"
-      />
-    </div>
-
-    <!-- Markdown content -->
-    <div class="markdown-body" #markdownBody [innerHTML]="renderedContent"></div>
+    <img [src]="imageData.src" alt="image" class="image-content" />
   </div>
 </div>

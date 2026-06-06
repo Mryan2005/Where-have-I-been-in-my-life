@@ -6,6 +6,8 @@ import { Subscription } from 'rxjs';
 import { LocationService } from './services/location.service';
 import { TravelLocation } from './models/location.model';
 import { MapComponent } from './components/map/map.component';
+import { ImageOpenEvent } from './components/location-panel/location-panel.component';
+import { ImageViewerData } from './components/image-viewer/image-viewer.component';
 import { ABOUT_CONTENT } from './data/about.data';
 
 type Lang = 'zh' | 'en';
@@ -101,6 +103,11 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   minimizedWindowIds = new Set<string>();
   private windowZIndexCounter = 1000;
   windowZIndexes = new Map<string, number>();
+
+  // ── Image viewer windows ────────────────────────────────────────────────────
+  openImageViewers: Map<string, ImageViewerData> = new Map();
+  minimizedImageIds = new Set<string>();
+  imageViewerZIndexes = new Map<string, number>();
 
   // ── Panel window visibility ────────────────────────────────────────────────
   showListPanel = false;
@@ -436,6 +443,54 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   restoreWindow(loc: TravelLocation): void {
     this.minimizedWindowIds.delete(loc.id);
     this.minimizedWindowIds = new Set(this.minimizedWindowIds);
+  }
+
+  // ── Image viewer window management ──────────────────────────────────────────
+  onImageOpen(locationId: string, imageEvent: ImageOpenEvent): void {
+    // Generate unique ID for this image viewer window
+    const imageId = `${locationId}_${Date.now()}`;
+    const imageData: ImageViewerData = {
+      id: imageId,
+      src: imageEvent.src,
+      title: imageEvent.title
+    };
+    this.openImageViewers.set(imageId, imageData);
+    this.onImageViewerFocused(imageId);
+  }
+
+  getImageViewerZIndex(imageId: string): number {
+    return this.imageViewerZIndexes.get(imageId) ?? 2000;
+  }
+
+  onImageViewerFocused(imageId: string): void {
+    this.windowZIndexCounter++;
+    this.imageViewerZIndexes.set(imageId, this.windowZIndexCounter);
+  }
+
+  onImageViewerClosed(imageId: string): void {
+    this.openImageViewers.delete(imageId);
+    this.minimizedImageIds.delete(imageId);
+    this.imageViewerZIndexes.delete(imageId);
+  }
+
+  onImageViewerMinimized(imageId: string): void {
+    this.minimizedImageIds.add(imageId);
+    this.minimizedImageIds = new Set(this.minimizedImageIds);
+  }
+
+  restoreImageViewer(imageId: string): void {
+    this.minimizedImageIds.delete(imageId);
+    this.minimizedImageIds = new Set(this.minimizedImageIds);
+  }
+
+  get visibleImageViewers(): ImageViewerData[] {
+    return Array.from(this.openImageViewers.values())
+      .filter(img => !this.minimizedImageIds.has(img.id));
+  }
+
+  get minimizedImages(): ImageViewerData[] {
+    return Array.from(this.openImageViewers.values())
+      .filter(img => this.minimizedImageIds.has(img.id));
   }
 
   openLocationFromList(loc: TravelLocation): void {
