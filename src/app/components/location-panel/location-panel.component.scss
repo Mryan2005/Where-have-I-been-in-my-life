@@ -103,27 +103,6 @@
   overflow: hidden;
   user-select: text;
   cursor: default;
-  
-  p {
-
-    img {
-      max-width: 100%;
-      height: auto;
-      border-radius: 6px;
-      margin: 12px 0;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-      cursor: pointer;
-      transition: transform 0.2s, filter 0.2s;
-      object-fit: contain;
-      display: block;
-
-      &:hover {
-        transform: scale(1.05);
-        filter: brightness(1.1);
-      }
-    }
-
-  }
 }
 
 // Image gallery
@@ -165,7 +144,25 @@
     h1 { font-size: 1.6em; font-weight: 700; color: #fff; margin: 0 0 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; }
     h2 { font-size: 1.2em; font-weight: 600; color: #e8e8e8; margin: 20px 0 8px; }
     h3 { font-size: 1.05em; font-weight: 600; color: #d0d0d0; margin: 16px 0 6px; }
-    p  { margin: 0 0 12px; }
+    p  { 
+      margin: 0 0 12px; 
+      img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 6px;
+        margin: 12px 0;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        cursor: pointer;
+        transition: transform 0.2s, filter 0.2s;
+        object-fit: contain;
+        display: block;
+  
+        &:hover {
+          transform: scale(1.05);
+          filter: brightness(1.1);
+        }
+      }
+    }
     blockquote {
       border-left: 3px solid #5E9CF5;
       margin: 12px 0;
