@@ -24,6 +24,7 @@ export class ImageViewerComponent implements OnInit {
   @Output() focused = new EventEmitter<void>();
 
   isMaximized = false;
+  zoomScale = 1;
 
   windowX = 200;
   windowY = 150;
@@ -131,6 +132,15 @@ export class ImageViewerComponent implements OnInit {
       this.windowHeight = window.innerHeight;
       this.isMaximized = true;
     }
+    this.cdr.markForCheck();
+  }
+
+  // ── Image Zoom (Mouse Wheel) ────────────────────────────────────────────────
+  onWheel(event: WheelEvent): void {
+    event.preventDefault();
+    const zoomDelta = event.deltaY > 0 ? -0.1 : 0.1;
+    this.zoomScale += zoomDelta;
+    this.zoomScale = Math.max(0.1, Math.min(this.zoomScale, 10)); // Clamp between 0.1x and 10x
     this.cdr.markForCheck();
   }
 }

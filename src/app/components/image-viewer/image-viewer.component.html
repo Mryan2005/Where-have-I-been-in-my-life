@@ -25,7 +25,7 @@
   </div>
 
   <!-- Content -->
-  <div class="window-body">
-    <img [src]="imageData.src" alt="image" class="image-content" />
+  <div class="window-body" (wheel)="onWheel($event)">
+    <img [src]="imageData.src" alt="image" class="image-content" [style.transform]="'scale(' + zoomScale + ')'" />
   </div>
 </div>
