@@ -38,6 +38,14 @@
     </div>
 
     <!-- Markdown content -->
-    <div class="markdown-body" [innerHTML]="renderedContent"></div>
+    <div class="markdown-body" #markdownBody [innerHTML]="renderedContent"></div>
+  </div>
+
+  <!-- Image Modal -->
+  <div class="image-modal-overlay" *ngIf="showImageModal" (click)="closeImageModal()">
+    <div class="image-modal-content" (click)="$event.stopPropagation()">
+      <button class="image-modal-close" (click)="closeImageModal()" title="关闭">✕</button>
+      <img [src]="selectedImage" alt="enlarged image" class="enlarged-image" />
+    </div>
   </div>
 </div>

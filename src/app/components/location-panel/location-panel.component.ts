@@ -1,7 +1,7 @@
 import {
   Component, Input, Output, EventEmitter, OnChanges,
   SimpleChanges, HostListener, ChangeDetectionStrategy, ChangeDetectorRef,
-  SecurityContext, OnInit
+  SecurityContext, OnInit, ViewChild, ElementRef, AfterViewChecked
 } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { marked } from 'marked';
@@ -14,15 +14,19 @@ import { TravelLocation } from '../../models/location.model';
   standalone: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LocationPanelComponent implements OnInit, OnChanges {
+export class LocationPanelComponent implements OnInit, OnChanges, AfterViewChecked {
   @Input() location!: TravelLocation;
   @Input() zIndex = 1000;
   @Output() closed = new EventEmitter<void>();
   @Output() minimizeToggled = new EventEmitter<void>();
   @Output() focused = new EventEmitter<void>();
+  @ViewChild('markdownBody') markdownBody!: ElementRef<HTMLDivElement>;
 
   renderedContent = '';
   isMaximized = false;
+  selectedImage = '';
+  showImageModal = false;
+  private imagesProcessed = false;
 
   windowX = 120;
   windowY = 80;
@@ -53,6 +57,15 @@ export class LocationPanelComponent implements OnInit, OnChanges {
     if (changes['location'] && this.location) {
       const raw = marked.parse(this.location.content ?? '') as string;
       this.renderedContent = this.sanitizer.sanitize(SecurityContext.HTML, raw) ?? '';
+      this.imagesProcessed = false; // Reset flag when content changes
+    }
+  }
+
+  ngAfterViewChecked(): void {
+    // Add click handlers to images after view is rendered
+    if (!this.imagesProcessed && this.markdownBody) {
+      this.attachImageClickHandlers();
+      this.imagesProcessed = true;
     }
   }
 
@@ -141,5 +154,37 @@ export class LocationPanelComponent implements OnInit, OnChanges {
       this.isMaximized = true;
     }
     this.cdr.markForCheck();
+  }
+
+  // ── Image modal handlers ────────────────────────────────────────────────────
+  private attachImageClickHandlers(): void {
+    if (!this.markdownBody) return;
+    
+    const images = this.markdownBody.nativeElement.querySelectorAll('p img');
+    images.forEach((img: Element) => {
+      const imgElement = img as HTMLImageElement;
+      imgElement.style.cursor = 'pointer';
+      imgElement.addEventListener('click', (e: Event) => this.onImageClick(e));
+    });
+  }
+
+  onImageClick(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    this.selectedImage = img.src;
+    this.showImageModal = true;
+    this.cdr.markForCheck();
+  }
+
+  closeImageModal(): void {
+    this.showImageModal = false;
+    this.selectedImage = '';
+    this.cdr.markForCheck();
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    if (this.showImageModal) {
+      this.closeImageModal();
+    }
   }
 }
