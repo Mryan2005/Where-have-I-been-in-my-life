@@ -1,51 +1,41 @@
 import {
-  Component, Input, Output, EventEmitter, OnChanges,
-  SimpleChanges, HostListener, ChangeDetectionStrategy, ChangeDetectorRef,
-  SecurityContext, OnInit, ViewChild, ElementRef, AfterViewChecked
+  Component, Input, Output, EventEmitter, OnInit,
+  HostListener, ChangeDetectionStrategy, ChangeDetectorRef
 } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
-import { marked } from 'marked';
-import { TravelLocation } from '../../models/location.model';
 
-export interface ImageOpenEvent {
+export interface ImageViewerData {
+  id: string;
   src: string;
   title: string;
 }
 
 @Component({
-  selector: 'app-location-panel',
-  templateUrl: './location-panel.component.html',
-  styleUrl: './location-panel.component.scss',
+  selector: 'app-image-viewer',
+  templateUrl: './image-viewer.component.html',
+  styleUrl: './image-viewer.component.scss',
   standalone: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LocationPanelComponent implements OnInit, OnChanges, AfterViewChecked {
-  @Input() location!: TravelLocation;
+export class ImageViewerComponent implements OnInit {
+  @Input() imageData!: ImageViewerData;
   @Input() zIndex = 1000;
   @Output() closed = new EventEmitter<void>();
   @Output() minimizeToggled = new EventEmitter<void>();
   @Output() focused = new EventEmitter<void>();
-  @Output() imageOpen = new EventEmitter<ImageOpenEvent>();
-  @ViewChild('markdownBody') markdownBody!: ElementRef<HTMLDivElement>;
 
-  renderedContent = '';
   isMaximized = false;
-  private imagesProcessed = false;
 
-  windowX = 120;
-  windowY = 80;
-  windowWidth = 680;
-  windowHeight = 520;
+  windowX = 200;
+  windowY = 150;
+  windowWidth = 600;
+  windowHeight = 500;
 
   private dragging = false;
   private dragOffsetX = 0;
   private dragOffsetY = 0;
   private savedState = { x: 0, y: 0, w: 0, h: 0 };
 
-  constructor(
-    private sanitizer: DomSanitizer,
-    private cdr: ChangeDetectorRef,
-  ) {}
+  constructor(private cdr: ChangeDetectorRef) {}
 
   get isMobile(): boolean {
     return typeof window !== 'undefined' && window.innerWidth < 768;
@@ -54,22 +44,6 @@ export class LocationPanelComponent implements OnInit, OnChanges, AfterViewCheck
   ngOnInit(): void {
     if (this.isMobile) {
       this.maximizeForMobile();
-    }
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['location'] && this.location) {
-      const raw = marked.parse(this.location.content ?? '') as string;
-      this.renderedContent = this.sanitizer.sanitize(SecurityContext.HTML, raw) ?? '';
-      this.imagesProcessed = false; // Reset flag when content changes
-    }
-  }
-
-  ngAfterViewChecked(): void {
-    // Add click handlers to images after view is rendered
-    if (!this.imagesProcessed && this.markdownBody) {
-      this.attachImageClickHandlers();
-      this.imagesProcessed = true;
     }
   }
 
@@ -158,29 +132,5 @@ export class LocationPanelComponent implements OnInit, OnChanges, AfterViewCheck
       this.isMaximized = true;
     }
     this.cdr.markForCheck();
-  }
-
-  // ── Image modal handlers ────────────────────────────────────────────────────
-  private attachImageClickHandlers(): void {
-    if (!this.markdownBody) return;
-    
-    const images = this.markdownBody.nativeElement.querySelectorAll('p img');
-    images.forEach((img: Element) => {
-      const imgElement = img as HTMLImageElement;
-      imgElement.style.cursor = 'pointer';
-      imgElement.addEventListener('click', (e: Event) => this.onImageClick(e));
-    });
-  }
-
-  onImageClick(event: Event): void {
-    const img = event.target as HTMLImageElement;
-    const src = img.src;
-    const alt = img.alt || 'Image';
-    this.imageOpen.emit({ src, title: alt });
-  }
-
-  @HostListener('document:keydown.escape')
-  onEscapeKey(): void {
-    // Can be used for other purposes if needed
   }
 }

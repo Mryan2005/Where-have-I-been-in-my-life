@@ -225,7 +225,19 @@
       (closed)="onWindowClosed(loc)"
       (minimizeToggled)="onMinimizeToggled(loc)"
       (focused)="onWindowFocused(loc)"
+      (imageOpen)="onImageOpen(loc.id, $event)"
     ></app-location-panel>
+  </ng-container>
+
+  <!-- ── Image Viewer Windows ─────────────────────────────────────────── -->
+  <ng-container *ngFor="let img of visibleImageViewers">
+    <app-image-viewer
+      [imageData]="img"
+      [zIndex]="getImageViewerZIndex(img.id)"
+      (closed)="onImageViewerClosed(img.id)"
+      (minimizeToggled)="onImageViewerMinimized(img.id)"
+      (focused)="onImageViewerFocused(img.id)"
+    ></app-image-viewer>
   </ng-container>
 
   <!-- ── About macOS Window ─────────────────────────────────────────── -->
