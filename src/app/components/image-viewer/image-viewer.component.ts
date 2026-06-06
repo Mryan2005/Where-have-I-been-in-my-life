@@ -25,6 +25,8 @@ export class ImageViewerComponent implements OnInit {
 
   isMaximized = false;
   zoomScale = 1;
+  panX = 0;
+  panY = 0;
 
   windowX = 200;
   windowY = 150;
@@ -34,6 +36,11 @@ export class ImageViewerComponent implements OnInit {
   private dragging = false;
   private dragOffsetX = 0;
   private dragOffsetY = 0;
+  
+  imageDragging = false;
+  private imageDragStartX = 0;
+  private imageDragStartY = 0;
+
   private savedState = { x: 0, y: 0, w: 0, h: 0 };
 
   constructor(private cdr: ChangeDetectorRef) {}
@@ -90,24 +97,42 @@ export class ImageViewerComponent implements OnInit {
 
   @HostListener('document:mousemove', ['$event'])
   onMouseMove(event: MouseEvent): void {
-    if (!this.dragging) return;
-    this.windowX = event.clientX - this.dragOffsetX;
-    this.windowY = event.clientY - this.dragOffsetY;
-    this.cdr.markForCheck();
+    if (this.dragging) {
+      this.windowX = event.clientX - this.dragOffsetX;
+      this.windowY = event.clientY - this.dragOffsetY;
+      this.cdr.markForCheck();
+    } else if (this.imageDragging) {
+      this.panX += event.clientX - this.imageDragStartX;
+      this.panY += event.clientY - this.imageDragStartY;
+      this.imageDragStartX = event.clientX;
+      this.imageDragStartY = event.clientY;
+      this.cdr.markForCheck();
+    }
   }
 
   @HostListener('document:touchmove', ['$event'])
   onTouchMove(event: TouchEvent): void {
-    if (!this.dragging) return;
-    const touch = event.touches[0];
-    this.windowX = touch.clientX - this.dragOffsetX;
-    this.windowY = touch.clientY - this.dragOffsetY;
-    this.cdr.markForCheck();
+    if (this.dragging) {
+      const touch = event.touches[0];
+      this.windowX = touch.clientX - this.dragOffsetX;
+      this.windowY = touch.clientY - this.dragOffsetY;
+      this.cdr.markForCheck();
+    } else if (this.imageDragging && event.touches.length === 1) {
+      const touch = event.touches[0];
+      this.panX += touch.clientX - this.imageDragStartX;
+      this.panY += touch.clientY - this.imageDragStartY;
+      this.imageDragStartX = touch.clientX;
+      this.imageDragStartY = touch.clientY;
+      this.cdr.markForCheck();
+    }
   }
 
   @HostListener('document:mouseup')
   @HostListener('document:touchend')
-  onPointerUp(): void { this.dragging = false; }
+  onPointerUp(): void { 
+    this.dragging = false; 
+    this.imageDragging = false;
+  }
 
   // ── Traffic-light buttons ───────────────────────────────────────────────────
   close(): void { this.closed.emit(); }
@@ -142,5 +167,21 @@ export class ImageViewerComponent implements OnInit {
     this.zoomScale += zoomDelta;
     this.zoomScale = Math.max(0.1, Math.min(this.zoomScale, 10)); // Clamp between 0.1x and 10x
     this.cdr.markForCheck();
+  }
+
+  // ── Image Pan (Drag) ────────────────────────────────────────────────────────
+  onImageMouseDown(event: MouseEvent): void {
+    event.preventDefault(); // prevent default image drag
+    this.imageDragging = true;
+    this.imageDragStartX = event.clientX;
+    this.imageDragStartY = event.clientY;
+  }
+
+  onImageTouchStart(event: TouchEvent): void {
+    if (event.touches.length === 1) {
+      this.imageDragging = true;
+      this.imageDragStartX = event.touches[0].clientX;
+      this.imageDragStartY = event.touches[0].clientY;
+    }
   }
 }

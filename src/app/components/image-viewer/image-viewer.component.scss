@@ -116,6 +116,12 @@
   border-radius: 6px;
   transition: transform 0.1s ease-out;
   transform-origin: center center;
+  cursor: grab;
+
+  &.dragging {
+    transition: none; // Remove transition while dragging to avoid lag
+    cursor: grabbing;
+  }
 }
 
 // ── Mobile: full-screen window ─────────────────────────────────────────────────
