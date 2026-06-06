@@ -147,20 +147,14 @@
     p  { 
       margin: 0 0 12px; 
       img {
-        max-width: 100%;
+        max-width: 80%;
         height: auto;
         border-radius: 6px;
         margin: 12px 0;
         box-shadow: 0 2px 8px rgba(0,0,0,0.4);
         cursor: pointer;
-        transition: transform 0.2s, filter 0.2s;
         object-fit: contain;
         display: block;
-  
-        &:hover {
-          transform: scale(1.05);
-          filter: brightness(1.1);
-        }
       }
     }
     blockquote {
