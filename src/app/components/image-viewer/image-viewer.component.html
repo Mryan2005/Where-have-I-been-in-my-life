@@ -26,6 +26,10 @@
 
   <!-- Content -->
   <div class="window-body" (wheel)="onWheel($event)">
-    <img [src]="imageData.src" alt="image" class="image-content" [style.transform]="'scale(' + zoomScale + ')'" />
+    <img [src]="imageData.src" alt="image" class="image-content" 
+         [class.dragging]="imageDragging"
+         (mousedown)="onImageMouseDown($event)"
+         (touchstart)="onImageTouchStart($event)"
+         [style.transform]="'translate(' + panX + 'px, ' + panY + 'px) scale(' + zoomScale + ')'" />
   </div>
 </div>
