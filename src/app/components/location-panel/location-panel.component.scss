@@ -103,6 +103,17 @@
   overflow: hidden;
   user-select: text;
   cursor: default;
+  
+  p {
+
+    img {
+      max-width: 90%;
+      border-radius: 6px;
+      margin: 12px 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+    
+  }
 }
 
 // Image gallery
